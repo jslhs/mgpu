@@ -36,6 +36,11 @@ int main()
 	D3D_FEATURE_LEVEL level;
 	D3D11CreateDevice(pAdapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, 0, 0, D3D11_SDK_VERSION, &pDevice, &level, 0);
 
+	DXGI_SWAP_CHAIN_DESC scdesc{};
+	scdesc.BufferCount = 2;
+	IDXGISwapChain *pSwapChain;
+	pDXGIFactory->CreateSwapChain(pDevice, &scdesc, &pSwapChain);
+
  	pDevice->Release();
 	pAdapter->Release();
 	pDXGIFactory->Release();
