@@ -115,18 +115,6 @@ private:
 			, this);
 	}
 
-	ATOM reg(const std::string &cls)
-	{
-		WNDCLASSEXA wcx{ sizeof(wcx) };
-		wcx.lpfnWndProc = winproc;
-		wcx.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-		wcx.hCursor = LoadCursor(nullptr, IDC_ARROW);
-		wcx.lpszClassName = cls.c_str();
-		//wcx.hInstance = GetModuleHandle(nullptr);
-		wcx.style = CS_HREDRAW | CS_VREDRAW;
-		return RegisterClassExA(&wcx);
-	}
-
 	static LRESULT CALLBACK winproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	{
 		if (msg == WM_NCCREATE)
@@ -311,6 +299,13 @@ public:
 	{
 		if (_ptr) _del(_ptr);
 		_ptr = ptr;
+	}
+
+	pointer release()
+	{
+		auto ptr = _ptr;
+		_ptr = nullptr;
+		return ptr;
 	}
 
 private:
