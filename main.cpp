@@ -5,9 +5,40 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <memory>
 
 #pragma comment(lib, "dxgi")
 #pragma comment(lib, "d3d11")
+
+class window_class
+{
+public:
+	window_class(const std::string &name, WNDPROC winproc)
+		: _name(name)
+	{
+		WNDCLASSEXA wcx{ sizeof(wcx) };
+		wcx.lpfnWndProc = winproc;
+		wcx.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wcx.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		wcx.lpszClassName = name.c_str();
+		wcx.style = CS_HREDRAW | CS_VREDRAW;
+		_atom = RegisterClassExA(&wcx);
+	}
+
+	~window_class()
+	{
+		UnregisterClassA(_name.c_str(), nullptr);
+	}
+
+	operator LPSTR()
+	{
+		return (LPSTR)_atom;
+	}
+
+private:
+	std::string _name;
+	ATOM _atom;
+};
 
 class window
 {
@@ -28,7 +59,7 @@ public:
 
 	virtual ~window()
 	{
-
+		DestroyWindow(_hwnd);
 	}
 
 	operator HWND() const
@@ -71,7 +102,7 @@ private:
 		AdjustWindowRect(&rc, style, FALSE);
 		width = rc.right - rc.left;
 		height = rc.bottom - rc.top;
-		_hwnd = CreateWindowA((LPSTR)reg("__sui_window__{5A5C7E7A-9204-49BE-8B53-3D7FFF272967}")
+		_hwnd = CreateWindowA(_cls
 			, title.c_str()
 			, style
 			, x
@@ -121,10 +152,12 @@ private:
 
 private:
 	static int _wcount;
+	static window_class _cls;
 	HWND _hwnd;
 };
 
 int window::_wcount;
+window_class window::_cls("__sui_window__{5A5C7E7A-9204-49BE-8B53-3D7FFF272967}", window::winproc);
 
 class application
 {
@@ -143,22 +176,50 @@ public:
 };
 
 template<class T>
+class com_ptr_default_delete
+{
+public:
+	com_ptr_default_delete(bool del = true)
+		: _delete(del)
+	{
+
+	}
+
+	void operator()(T *ptr)
+	{
+		if (_delete) ptr->Release();
+	}
+
+private:
+	bool _delete;
+};
+
+template<class T, class D = com_ptr_default_delete<T>>
 class com_ptr
 {
 public:
+	typedef T *pointer;
+	typedef typename D deleter;
+
 	com_ptr()
 		: _ptr(nullptr)
 	{
 
 	}
 
-	com_ptr(T *ptr)
+	com_ptr(nullptr_t)
+		: _ptr(nullptr)
+	{
+
+	}
+
+	explicit com_ptr(pointer ptr)
 		: _ptr(ptr)
 	{
 
 	}
 
-	com_ptr(T **ptr)
+	explicit com_ptr(pointer* ptr)
 		: _ptr(nullptr)
 	{
 		if (ptr)
@@ -170,82 +231,127 @@ public:
 
 	~com_ptr()
 	{
-		if (_ptr) _ptr->Release();
-		_ptr = nullptr;
+		reset(nullptr);
 	}
 
 	com_ptr(const com_ptr &) = delete;
 	com_ptr &operator=(const com_ptr &) = delete;
 
-	com_ptr(com_ptr &&ptr)
+	com_ptr &operator=(nullptr_t)
 	{
-		if (&ptr != this)
+		reset(nullptr);
+		return *this;
+	}
+
+	com_ptr(com_ptr&& ptr)
+		: _ptr(nullptr)
+	{
+		if (ptr._ptr != _ptr)
 		{
-			std::swap(_ptr, ptr._ptr);
+			_ptr = ptr._ptr;
+			_del = ptr._del;
+			ptr._ptr = nullptr;
 		}
 	}
 
-	com_ptr &operator=(com_ptr &&ptr)
+	com_ptr &operator=(com_ptr&& ptr)
 	{
-		if (&ptr != this)
+		if (ptr._ptr != _ptr)
 		{
-			std::swap(_ptr, ptr._ptr);
+			reset(nullptr);
+			_ptr = ptr._ptr;
+			_del = ptr._del;
+			ptr._ptr = nullptr;
 		}
 
 		return *this;
 	}
 
-	T *get()
+	pointer get()
 	{
 		return _ptr;
 	}
 
-	T *operator->()
+	pointer operator->()
 	{
 		return _ptr;
 	}
 
-	T **operator&()
+	T &operator*()
+	{
+		return *_ptr;
+	}
+
+	pointer* operator&()
 	{
 		return &_ptr;
 	}
 
+	bool operator==(const com_ptr &ptr)
+	{
+		return _ptr == ptr._ptr;
+	}
+
+	bool operator!=(const com_ptr &ptr)
+	{
+		return !(*this == ptr);
+	}
+
+	operator pointer()
+	{
+		return _ptr;
+	}
+
+	deleter &get_deleter()
+	{
+		return _del;
+	}
+
+	void reset(pointer ptr)
+	{
+		if (_ptr) _del(_ptr);
+		_ptr = ptr;
+	}
+
 private:
-	T *_ptr;
+	pointer _ptr;
+	deleter _del;
 };
 
 int main()
 {
 	application app;
 	window w("mgpu");
-	IDXGIFactory2 *pDXGIFactory = nullptr;
-	com_ptr<IDXGIFactory2> fact;
-	auto hr = CreateDXGIFactory1(__uuidof(IDXGIFactory2), (void **)&pDXGIFactory);
+	window w0("demo");
+	com_ptr<IDXGIFactory2> dxgi_factory;
+	auto hr = CreateDXGIFactory1(__uuidof(IDXGIFactory2), (void **)&dxgi_factory);
 	if (FAILED(hr)) std::cout << "unable to create IDXGIFactory2!" << std::endl;
-
+	std::vector<com_ptr<IDXGIAdapter2>> adapters;
+	std::vector<com_ptr<ID3D11Device>> devices;
 	UINT i = 0;
-	IDXGIAdapter2 *pAdapter;
-	ID3D11Device *pDevice;
-	std::vector<IDXGIAdapter2 *> adapters;
-	std::vector<ID3D11Device *> devices;
-	while (pDXGIFactory->EnumAdapters1(i++, (IDXGIAdapter1 **)&pAdapter) != DXGI_ERROR_NOT_FOUND)
 	{
-		adapters.push_back(pAdapter);
-		DXGI_ADAPTER_DESC2 desc;
-		if (SUCCEEDED(pAdapter->GetDesc2(&desc)))
+		com_ptr<IDXGIAdapter2> adapter;
+		
+		while (dxgi_factory->EnumAdapters1(i++, (IDXGIAdapter1 **)&adapter) != DXGI_ERROR_NOT_FOUND)
 		{
-			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue; // skip software adapter
-			std::cout << "Adapter[" << i << "]: ";
-			std::wcout << desc.Description << std::endl;
+			DXGI_ADAPTER_DESC2 desc;
+			if (SUCCEEDED(adapter->GetDesc2(&desc)))
+			{
+				//if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue; // skip software adapter
+				std::cout << "Adapter[" << i << "]: ";
+				std::wcout << desc.Description << std::endl;
+			}
+
+			adapters.push_back(std::move(adapter));
 		}
 	}
 
-	pAdapter = adapters.front();
+	auto &adapter = adapters.front();
+	com_ptr<ID3D11Device> device;
 
 	D3D_FEATURE_LEVEL level;
-	ID3D11DeviceContext *ctx;
-	com_ptr<ID3D11DeviceContext> ctx1;
-	D3D11CreateDevice(pAdapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_DEBUG, 0, 0, D3D11_SDK_VERSION, &pDevice, &level, &ctx);
+	com_ptr<ID3D11DeviceContext> ctx;
+	D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_DEBUG, 0, 0, D3D11_SDK_VERSION, &device, &level, &ctx);
 
 	DXGI_SWAP_CHAIN_DESC sc{};
 	RECT rc;
@@ -263,15 +369,14 @@ int main()
 	sc.SampleDesc.Count = 1;
 	sc.SampleDesc.Quality = 0;
 	sc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	IDXGISwapChain *pSwapChain;
-	hr = pDXGIFactory->CreateSwapChain(pDevice, &sc, &pSwapChain);
-	auto err = GetLastError();
 
-	ID3D11RenderTargetView *back_buf_target;
-	ID3D11Texture2D *back_buf_tex;
-	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&back_buf_tex);
-	hr = pDevice->CreateRenderTargetView(back_buf_tex, nullptr, &back_buf_target);
-	back_buf_tex->Release();
+	com_ptr<IDXGISwapChain> swap_chain;
+	hr = dxgi_factory->CreateSwapChain(device, &sc, &swap_chain);
+
+	com_ptr<ID3D11RenderTargetView>back_buf_target;
+	com_ptr<ID3D11Texture2D> back_buf_tex;
+	hr = swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&back_buf_tex);
+	hr = device->CreateRenderTargetView(back_buf_tex, nullptr, &back_buf_target);
 
 	ctx->OMSetRenderTargets(1, &back_buf_target, nullptr);
 
@@ -285,13 +390,9 @@ int main()
 
 	ctx->RSSetViewports(1, &vp);
 
-	FLOAT color[] = {0.75f, 0.75f, 0.75f};
+	float color[] = {0.75f, 0.75f, 0.75f};
 	ctx->ClearRenderTargetView(back_buf_target, color);
 
-	pSwapChain->Present(0, 0);
-	//pDevice->Release();
-	//pAdapter->Release();
-	//pDXGIFactory->Release();
-
+	swap_chain->Present(0, 0);
 	return app.run();
 }
