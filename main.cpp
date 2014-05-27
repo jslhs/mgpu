@@ -39,13 +39,28 @@ public:
 protected:
 	virtual LRESULT msgproc(UINT msg, WPARAM wparam, LPARAM lparam)
 	{
-		if (msg == WM_CREATE) _wcount++;
-		if (msg == WM_DESTROY)
+		switch (msg)
 		{
+		case WM_CREATE:
+			_wcount++;
+			break;
+		case WM_DESTROY:
 			_wcount--;
 			if (!_wcount) PostQuitMessage(0);
+			break;
+		case WM_PAINT:
+			{
+				PAINTSTRUCT ps;
+				auto hdc = BeginPaint(_hwnd, &ps);
+
+				EndPaint(_hwnd, &ps);
+			}
+			break;
+		default:
+			return DefWindowProcA(_hwnd, msg, wparam, lparam);
 		}
-		return DefWindowProcA(_hwnd, msg, wparam, lparam);
+
+		return 0;
 	}
 
 private:
@@ -86,7 +101,11 @@ private:
 		if (msg == WM_NCCREATE)
 		{
 			CREATESTRUCTA *cs = reinterpret_cast<CREATESTRUCTA *>(lparam);
-			SetWindowLongPtrA(hwnd, GWLP_USERDATA, (LONG)cs->lpCreateParams);
+#ifdef _WIN64
+			SetWindowLongPtrA(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(cs->lpCreateParams));
+#else
+			SetWindowLongPtrA(hwnd, GWLP_USERDATA, reinterpret_cast<LONG>(cs->lpCreateParams));
+#endif
 			//return TRUE;
 		}
 
@@ -123,11 +142,84 @@ public:
 	}
 };
 
+template<class T>
+class com_ptr
+{
+public:
+	com_ptr()
+		: _ptr(nullptr)
+	{
+
+	}
+
+	com_ptr(T *ptr)
+		: _ptr(ptr)
+	{
+
+	}
+
+	com_ptr(T **ptr)
+		: _ptr(nullptr)
+	{
+		if (ptr)
+		{
+			_ptr = *ptr;
+			*ptr = nullptr;
+		}
+	}
+
+	~com_ptr()
+	{
+		if (_ptr) _ptr->Release();
+		_ptr = nullptr;
+	}
+
+	com_ptr(const com_ptr &) = delete;
+	com_ptr &operator=(const com_ptr &) = delete;
+
+	com_ptr(com_ptr &&ptr)
+	{
+		if (&ptr != this)
+		{
+			std::swap(_ptr, ptr._ptr);
+		}
+	}
+
+	com_ptr &operator=(com_ptr &&ptr)
+	{
+		if (&ptr != this)
+		{
+			std::swap(_ptr, ptr._ptr);
+		}
+
+		return *this;
+	}
+
+	T *get()
+	{
+		return _ptr;
+	}
+
+	T *operator->()
+	{
+		return _ptr;
+	}
+
+	T **operator&()
+	{
+		return &_ptr;
+	}
+
+private:
+	T *_ptr;
+};
+
 int main()
 {
 	application app;
 	window w("mgpu");
 	IDXGIFactory2 *pDXGIFactory = nullptr;
+	com_ptr<IDXGIFactory2> fact;
 	auto hr = CreateDXGIFactory1(__uuidof(IDXGIFactory2), (void **)&pDXGIFactory);
 	if (FAILED(hr)) std::cout << "unable to create IDXGIFactory2!" << std::endl;
 
@@ -151,18 +243,55 @@ int main()
 	pAdapter = adapters.front();
 
 	D3D_FEATURE_LEVEL level;
-	D3D11CreateDevice(pAdapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, 0, 0, D3D11_SDK_VERSION, &pDevice, &level, 0);
+	ID3D11DeviceContext *ctx;
+	com_ptr<ID3D11DeviceContext> ctx1;
+	D3D11CreateDevice(pAdapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_DEBUG, 0, 0, D3D11_SDK_VERSION, &pDevice, &level, &ctx);
 
-	DXGI_SWAP_CHAIN_DESC scdesc{};
-	scdesc.BufferCount = 2;
+	DXGI_SWAP_CHAIN_DESC sc{};
+	RECT rc;
+	GetClientRect(w, &rc);
+	int width = rc.right - rc.left;
+	int height = rc.bottom - rc.top;
+	sc.BufferCount = 1;
+	sc.BufferDesc.Width = width;
+	sc.BufferDesc.Height = height;
+	sc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	sc.BufferDesc.RefreshRate.Numerator = 60;
+	sc.BufferDesc.RefreshRate.Denominator = 1;
+	sc.Windowed = true;
+	sc.OutputWindow = w;
+	sc.SampleDesc.Count = 1;
+	sc.SampleDesc.Quality = 0;
+	sc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	IDXGISwapChain *pSwapChain;
-	pDXGIFactory->CreateSwapChain(pDevice, &scdesc, &pSwapChain);
+	hr = pDXGIFactory->CreateSwapChain(pDevice, &sc, &pSwapChain);
+	auto err = GetLastError();
 
-	auto c = app.run();
+	ID3D11RenderTargetView *back_buf_target;
+	ID3D11Texture2D *back_buf_tex;
+	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&back_buf_tex);
+	hr = pDevice->CreateRenderTargetView(back_buf_tex, nullptr, &back_buf_target);
+	back_buf_tex->Release();
 
-	pDevice->Release();
-	pAdapter->Release();
-	pDXGIFactory->Release();
+	ctx->OMSetRenderTargets(1, &back_buf_target, nullptr);
 
-	return 0;
+	D3D11_VIEWPORT vp;
+	vp.Width = static_cast<float>(width);
+	vp.Height = static_cast<float>(height);
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+
+	ctx->RSSetViewports(1, &vp);
+
+	FLOAT color[] = {0.75f, 0.75f, 0.75f};
+	ctx->ClearRenderTargetView(back_buf_target, color);
+
+	pSwapChain->Present(0, 0);
+	//pDevice->Release();
+	//pAdapter->Release();
+	//pDXGIFactory->Release();
+
+	return app.run();
 }
