@@ -6,9 +6,35 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <functional>
+#include <algorithm>
 
 #pragma comment(lib, "dxgi")
 #pragma comment(lib, "d3d11")
+
+std::string get_win32_error_string(DWORD code, DWORD lang = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT))
+{
+	char *buf = nullptr;
+	FormatMessageA(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER
+		| FORMAT_MESSAGE_FROM_SYSTEM
+		| FORMAT_MESSAGE_IGNORE_INSERTS
+		, nullptr
+		, code
+		, lang
+		, (LPSTR)&buf
+		, 0
+		, nullptr);
+
+	std::string msg;
+	if (buf)
+	{
+		msg = buf;
+		LocalFree(buf);
+	}
+
+	return msg;
+}
 
 class window_class
 {
@@ -313,13 +339,93 @@ private:
 	deleter _del;
 };
 
+class renderer
+{
+public:
+	virtual void update(float dt = 0.0f) = 0;
+	virtual void render() = 0;
+};
+
+class run_loop
+{
+public:
+	typedef std::function<void()> task;
+
+	run_loop();
+	~run_loop();
+
+	run_loop(const run_loop &) = delete;
+	run_loop &operator=(const run_loop &) = delete;
+
+	void run()
+	{
+		MSG msg;
+		while (msg.message != WM_QUIT)
+		{
+			if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			else
+			{
+				for (auto &t : _tasks) t();
+			}
+		}
+	}
+
+	size_t add(task t)
+	{
+		_tasks.push_back(t);
+		return _tasks.size() - 1;
+	}
+
+	void remove(size_t t)
+	{
+		if (t >= _tasks.size()) return;
+		auto it = _tasks.begin();
+		std::advance(it, t);
+		_tasks.erase(it);
+	}
+
+private:
+	std::vector<task> _tasks;
+};
+
+class hresult
+{
+public:
+	hresult();
+
+	hresult(HRESULT hr)
+	{
+		*this = hr;
+	}
+
+	hresult &operator=(HRESULT hr)
+	{
+		_hr = hr;
+		_err = get_win32_error_string(_hr);
+		return *this;
+	}
+
+	operator HRESULT()
+	{
+		return _hr;
+	}
+	
+private:
+	std::string _err;
+	HRESULT _hr;
+};
+
 int main()
 {
 	application app;
 	window w("mgpu");
 	window w0("demo");
 	com_ptr<IDXGIFactory2> dxgi_factory;
-	auto hr = CreateDXGIFactory1(__uuidof(IDXGIFactory2), (void **)&dxgi_factory);
+	hresult hr = CreateDXGIFactory1(__uuidof(IDXGIFactory2), (void **)&dxgi_factory);
 	if (FAILED(hr)) std::cout << "unable to create IDXGIFactory2!" << std::endl;
 	std::vector<com_ptr<IDXGIAdapter2>> adapters;
 	std::vector<com_ptr<ID3D11Device>> devices;
@@ -375,15 +481,15 @@ int main()
 
 	ctx->OMSetRenderTargets(1, &back_buf_target, nullptr);
 
-	D3D11_VIEWPORT vp;
-	vp.Width = static_cast<float>(width);
-	vp.Height = static_cast<float>(height);
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
+	D3D11_VIEWPORT viewport;
+	viewport.Width = static_cast<float>(width);
+	viewport.Height = static_cast<float>(height);
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
 
-	ctx->RSSetViewports(1, &vp);
+	ctx->RSSetViewports(1, &viewport);
 
 	float color[] = {0.75f, 0.75f, 0.75f};
 	ctx->ClearRenderTargetView(back_buf_target, color);
