@@ -73,24 +73,35 @@ class rect
 
 };
 
-class window_delegate
+template<class>
+class delegate;
+
+template<class... Args>
+class delegate<void(Args...)>
 {
 public:
-	virtual void will_resize();
-	virtual void did_resize();
-	virtual void will_miniaturize();
-	virtual void did_miniaturize();
-	virtual void did_deminiaturize();
-	virtual void will_close();
-	virtual bool should_close();
-	virtual void will_move();
-	virtual void did_move();
-	virtual void did_activate();
-	virtual void did_deactivate();
-	virtual void did_focus();
-	virtual void did_lose_focus();
-	virtual void will_show();
-	virtual void did_show();
+	typedef std::function<void(Args...)> handler_type;
+
+	delegate &operator=(const handler_type& handler)
+	{
+		_handlers.clear();
+		_handlers.push_back(handler);
+		return *this;
+	}
+
+	delegate &operator+=(const handler_type& handler)
+	{
+		_handlers.push_back(handler);
+		return *this;
+	}
+
+	void operator()(Args... args)
+	{
+		for (auto &handler : _handlers) if (handler) handler(args...);
+	}
+
+private:
+	std::vector<handler_type> _handlers;
 };
 
 class window
@@ -98,7 +109,6 @@ class window
 public:
 	window(const std::string &title, int x, int y, int width, int height)
 		: _hwnd(nullptr)
-		, _dlgt(nullptr)
 	{
 		create(title, x, y, width, height);
 		ShowWindow(_hwnd, SW_SHOW);
@@ -121,17 +131,21 @@ public:
 		return _hwnd;
 	}
 
+	using will_resize_delegate = delegate < void(UINT, RECT *) >;
+	using did_resize_delegate = delegate < void(UINT, int width, int height) >;
+
+	will_resize_delegate &will_resize()
+	{
+		return _dlgt_will_resize;
+	}
+
+	did_resize_delegate &did_resize()
+	{
+		return _dlgt_did_resize;
+	}
+
 	void update();
 
-	window_delegate *delegate() const
-	{
-		return _dlgt;
-	}
-
-	void set_delegate(window_delegate *dlgt)
-	{
-		_dlgt = dlgt;
-	}
 
 protected:
 	virtual LRESULT msgproc(UINT msg, WPARAM wparam, LPARAM lparam)
@@ -153,6 +167,12 @@ protected:
 				EndPaint(_hwnd, &ps);
 			}
 			break;
+		case WM_SIZE:
+			_dlgt_did_resize(wparam, LOWORD(lparam), HIWORD(lparam));
+			return TRUE;
+		case WM_SIZING:
+			_dlgt_will_resize(wparam, reinterpret_cast<RECT*>(lparam));
+			return TRUE;
 		default:
 			return DefWindowProcA(_hwnd, msg, wparam, lparam);
 		}
@@ -215,7 +235,8 @@ private:
 	static int _wcount;
 	static window_class _cls;
 	HWND _hwnd;
-	window_delegate *_dlgt;
+	will_resize_delegate _dlgt_will_resize;
+	did_resize_delegate _dlgt_did_resize;
 };
 
 int window::_wcount;
@@ -586,6 +607,12 @@ int main()
 	hr = dxgi_factory->CreateSwapChain(device, &sc, &swap_chain);
 	std::cout << "create swap chain: " << hr << std::endl;
 
+	w.did_resize() += [&swap_chain](UINT flags, int width, int height){
+		//swap_chain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+		std::cout << "width = " << width << ", height = " << height << std::endl;
+	};
+
+	//swap_chain->SetFullscreenState(TRUE, nullptr);
 	//swap_chain->ResizeBuffers(1, 1920, 1080, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
 	com_ptr<ID3D11RenderTargetView>back_buf_target;
