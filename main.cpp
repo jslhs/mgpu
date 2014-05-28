@@ -8,6 +8,7 @@
 #include <memory>
 #include <functional>
 #include <algorithm>
+#include <map>
 
 #pragma comment(lib, "dxgi")
 #pragma comment(lib, "d3d11")
@@ -66,11 +67,38 @@ private:
 	ATOM _atom;
 };
 
+class window;
+class rect
+{
+
+};
+
+class window_delegate
+{
+public:
+	virtual void will_resize();
+	virtual void did_resize();
+	virtual void will_miniaturize();
+	virtual void did_miniaturize();
+	virtual void did_deminiaturize();
+	virtual void will_close();
+	virtual bool should_close();
+	virtual void will_move();
+	virtual void did_move();
+	virtual void did_activate();
+	virtual void did_deactivate();
+	virtual void did_focus();
+	virtual void did_lose_focus();
+	virtual void will_show();
+	virtual void did_show();
+};
+
 class window
 {
 public:
 	window(const std::string &title, int x, int y, int width, int height)
 		: _hwnd(nullptr)
+		, _dlgt(nullptr)
 	{
 		create(title, x, y, width, height);
 		ShowWindow(_hwnd, SW_SHOW);
@@ -93,6 +121,18 @@ public:
 		return _hwnd;
 	}
 
+	void update();
+
+	window_delegate *delegate() const
+	{
+		return _dlgt;
+	}
+
+	void set_delegate(window_delegate *dlgt)
+	{
+		_dlgt = dlgt;
+	}
+
 protected:
 	virtual LRESULT msgproc(UINT msg, WPARAM wparam, LPARAM lparam)
 	{
@@ -109,7 +149,7 @@ protected:
 			{
 				PAINTSTRUCT ps;
 				auto hdc = BeginPaint(_hwnd, &ps);
-
+				paint(hdc, ps);
 				EndPaint(_hwnd, &ps);
 			}
 			break;
@@ -118,6 +158,11 @@ protected:
 		}
 
 		return 0;
+	}
+
+	virtual void paint(HDC hdc, const PAINTSTRUCT &ps)
+	{
+
 	}
 
 private:
@@ -165,9 +210,12 @@ private:
 	}
 
 private:
+	using msg_translator = std::function < LRESULT(WPARAM, LPARAM) > ;
+	std::map<UINT, msg_translator> _msg_trans;
 	static int _wcount;
 	static window_class _cls;
 	HWND _hwnd;
+	window_delegate *_dlgt;
 };
 
 int window::_wcount;
@@ -339,11 +387,56 @@ private:
 	deleter _del;
 };
 
-class renderer
+class renderer_base
 {
 public:
-	virtual void update(float dt = 0.0f) = 0;
+	virtual void update(float dt) = 0;
 	virtual void render() = 0;
+};
+
+class scene;
+class texture;
+class material;
+class light;
+class shader;
+
+class scene
+{
+public:
+	void apply(const shader &s);
+};
+
+class renderer
+	: public renderer_base
+{
+public:
+	renderer(window &w)
+		: _w(w)
+	{
+
+	}
+
+	virtual ~renderer();
+
+	void update(float dt = 0.0f) override
+	{
+
+	}
+
+	void render() override
+	{
+
+	}
+
+private:
+	window &_w;
+};
+
+class off_screen_renderer
+	: public renderer_base
+{
+public:
+
 };
 
 class run_loop
@@ -395,7 +488,11 @@ private:
 class hresult
 {
 public:
-	hresult();
+	hresult()
+		: _hr(0)
+	{
+
+	}
 
 	hresult(HRESULT hr)
 	{
@@ -405,7 +502,9 @@ public:
 	hresult &operator=(HRESULT hr)
 	{
 		_hr = hr;
+#ifdef _DEBUG
 		_err = get_win32_error_string(_hr);
+#endif
 		return *this;
 	}
 
@@ -413,11 +512,23 @@ public:
 	{
 		return _hr;
 	}
+
+	std::string error_string() const
+	{
+		return get_win32_error_string(_hr);
+	}
 	
 private:
+#ifdef _DEBUG
 	std::string _err;
+#endif
 	HRESULT _hr;
 };
+
+std::ostream &operator<<(std::ostream &os, const hresult &hr)
+{
+	return os << hr.error_string();
+}
 
 int main()
 {
@@ -473,6 +584,9 @@ int main()
 
 	com_ptr<IDXGISwapChain> swap_chain;
 	hr = dxgi_factory->CreateSwapChain(device, &sc, &swap_chain);
+	std::cout << "create swap chain: " << hr << std::endl;
+
+	//swap_chain->ResizeBuffers(1, 1920, 1080, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
 	com_ptr<ID3D11RenderTargetView>back_buf_target;
 	com_ptr<ID3D11Texture2D> back_buf_tex;
