@@ -176,7 +176,7 @@ protected:
 		default:
 			return DefWindowProcA(_hwnd, msg, wparam, lparam);
 		}
-
+		
 		return 0;
 	}
 
@@ -230,8 +230,8 @@ private:
 	}
 
 private:
-	using msg_translator = std::function < LRESULT(WPARAM, LPARAM) > ;
-	std::map<UINT, msg_translator> _msg_trans;
+	//using msg_translator = std::function < LRESULT(WPARAM, LPARAM) > ;
+	//std::map<UINT, msg_translator> _msg_trans;
 	static int _wcount;
 	static window_class _cls;
 	HWND _hwnd;
