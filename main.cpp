@@ -73,23 +73,104 @@ class rect
 
 };
 
-template<class>
-class delegate;
-
-template<class... Args>
-class delegate<void(Args...)>
+class event_args
 {
 public:
-	typedef std::function<void(Args...)> handler_type;
+	void accept()
+	{
+		_accepted = true;
+	}
 
-	delegate &operator=(const handler_type& handler)
+	void ignore()
+	{
+		_ignored = true;
+	}
+
+	bool accepted() const
+	{
+		return _accepted;
+	}
+
+	bool ignored() const
+	{
+		return _ignored;
+	}
+
+private:
+	bool _accepted = false;
+	bool _ignored = false;
+};
+
+class size_event_args
+	: public event_args
+{
+public:
+	size_event_args(int type, int width, int height)
+		: _type(type)
+		, _width(width)
+		, _height(height)
+	{
+
+	}
+
+	int type() const
+	{
+		return _type;
+	}
+
+	int width() const
+	{
+		return _width;
+	}
+
+	int height() const
+	{
+		return _height;
+	}
+
+private:
+	int _type;
+	int _width;
+	int _height;
+};
+
+class cancel_event_args : public event_args
+{
+public:
+	void cancel()
+	{
+		_canceled = true;
+	}
+
+	bool canceled()
+	{
+		return _canceled;
+	}
+
+private:
+	bool _canceled = false;
+};
+
+//template<class>
+//class event;
+
+//template<class R, class... Args>
+//class event<R(Args...)>
+
+template<class... Args>
+class event
+{
+public:
+	using delegate = std::function < void(Args...) > ;
+
+	event &operator=(const delegate& handler)
 	{
 		_handlers.clear();
 		_handlers.push_back(handler);
 		return *this;
 	}
 
-	delegate &operator+=(const handler_type& handler)
+	event &operator+=(const delegate& handler)
 	{
 		_handlers.push_back(handler);
 		return *this;
@@ -101,7 +182,7 @@ public:
 	}
 
 private:
-	std::vector<handler_type> _handlers;
+	std::vector<delegate> _handlers;
 };
 
 class window
@@ -131,17 +212,17 @@ public:
 		return _hwnd;
 	}
 
-	using will_resize_delegate = delegate < void(UINT, RECT *) >;
-	using did_resize_delegate = delegate < void(UINT, int width, int height) >;
+	using will_resize_event = event <UINT, RECT *>;
+	using did_resize_event = event <size_event_args &>;
 
-	will_resize_delegate &will_resize()
+	will_resize_event &will_resize()
 	{
-		return _dlgt_will_resize;
+		return _event_will_resize;
 	}
 
-	did_resize_delegate &did_resize()
+	did_resize_event &did_resize()
 	{
-		return _dlgt_did_resize;
+		return _event_did_resize;
 	}
 
 	void update();
@@ -168,10 +249,14 @@ protected:
 			}
 			break;
 		case WM_SIZE:
-			_dlgt_did_resize(wparam, LOWORD(lparam), HIWORD(lparam));
+			{
+				size_event_args args(wparam, LOWORD(lparam), HIWORD(lparam));
+				_event_did_resize(args);
+			}
+			
 			return TRUE;
 		case WM_SIZING:
-			_dlgt_will_resize(wparam, reinterpret_cast<RECT*>(lparam));
+			_event_will_resize(wparam, reinterpret_cast<RECT*>(lparam));
 			return TRUE;
 		default:
 			return DefWindowProcA(_hwnd, msg, wparam, lparam);
@@ -235,8 +320,8 @@ private:
 	static int _wcount;
 	static window_class _cls;
 	HWND _hwnd;
-	will_resize_delegate _dlgt_will_resize;
-	did_resize_delegate _dlgt_did_resize;
+	will_resize_event _event_will_resize;
+	did_resize_event _event_did_resize;
 };
 
 int window::_wcount;
@@ -607,11 +692,6 @@ int main()
 	hr = dxgi_factory->CreateSwapChain(device, &sc, &swap_chain);
 	std::cout << "create swap chain: " << hr << std::endl;
 
-	w.did_resize() += [&swap_chain](UINT flags, int width, int height){
-		//swap_chain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
-		std::cout << "width = " << width << ", height = " << height << std::endl;
-	};
-
 	//swap_chain->SetFullscreenState(TRUE, nullptr);
 	//swap_chain->ResizeBuffers(1, 1920, 1080, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
@@ -634,6 +714,24 @@ int main()
 
 	float color[] = {0.75f, 0.75f, 0.75f};
 	ctx->ClearRenderTargetView(back_buf_target, color);
+
+	w.did_resize() += [&](size_event_args &e){
+		ctx->ClearState();
+		back_buf_tex = nullptr;
+		back_buf_target = nullptr;
+		
+		hr = swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+		std::cout << "ResizeBuffers: " << hr << std::endl;
+		std::cout << "width = " << e.width() << ", height = " << e.height() << std::endl;
+
+		hr = swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&back_buf_tex);
+		hr = device->CreateRenderTargetView(back_buf_tex, nullptr, &back_buf_target);
+
+		ctx->OMSetRenderTargets(1, &back_buf_target, nullptr);
+
+		hr = swap_chain->Present(0, 0);
+		std::cout << "Present: " << hr << std::endl;
+	};
 
 	swap_chain->Present(0, 0);
 	return app.run();
