@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <io.h>
 #include <fcntl.h>
+#include <d3dcompiler.h>
 
 #include <iostream>
 #include <vector>
@@ -11,9 +12,11 @@
 #include <functional>
 #include <algorithm>
 #include <map>
+#include <fstream>
 
 #pragma comment(lib, "dxgi")
 #pragma comment(lib, "d3d11")
+#pragma comment(lib, "d3dcompiler")
 
 std::string get_win32_error_string(DWORD code, DWORD lang = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT))
 {
@@ -62,7 +65,7 @@ public:
 		return *this;
 	}
 
-	operator HRESULT()
+	operator HRESULT() const
 	{
 		return _hr;
 	}
@@ -70,6 +73,16 @@ public:
 	std::string error_string() const
 	{
 		return get_win32_error_string(_hr);
+	}
+
+	bool failed() const
+	{
+		return FAILED(_hr) == TRUE;
+	}
+
+	bool succeeded() const
+	{
+		return SUCCEEDED(_hr) == TRUE;
 	}
 
 private:
@@ -914,9 +927,177 @@ using vec4 = vec_t < 4, float > ;
 struct vertex
 {
 	vec3 pos;
-	vec4 color;
-	vec3 norm;
-	vec2 uv;
+	//vec4 color;
+	//vec3 norm;
+	//vec2 uv;
+};
+
+class shader_factory
+{
+public:
+	shader_factory(com_ptr<ID3D11Device> &dev)
+		: _dev(dev)
+		, _flags1(0)
+		, _flags2(0)
+		, _defs(nullptr)
+		, _inc(nullptr)
+		, _dirty(true)
+	{
+
+	}
+
+	~shader_factory()
+	{
+
+	}
+
+	hresult create_vertex_shader(ID3D11VertexShader **s, const std::string &target = "", const std::string &entry_point = "", ID3D11ClassLinkage *link = nullptr)
+	{
+		compile(entry_point.empty() ? _entry : entry_point, target.empty() ? _target : target);
+		if (_hr.succeeded())
+		{
+			_hr = _dev->CreateVertexShader(_bin->GetBufferPointer(), _bin->GetBufferSize(), link, s);
+		}
+		return _hr;
+	}
+
+	hresult create_pixel_shader(ID3D11PixelShader **s, const std::string &target = "", const std::string &entry_point = "", ID3D11ClassLinkage *link = nullptr)
+	{
+		compile(entry_point.empty() ? _entry : entry_point, target.empty() ? _target : target);
+		if (_hr.succeeded())
+		{
+			_hr = _dev->CreatePixelShader(_bin->GetBufferPointer(), _bin->GetBufferSize(), link, s);
+		}
+		return _hr;
+	}
+
+	hresult create_compute_shader(ID3D11ComputeShader **s, const std::string &target = "", const std::string &entry_point = "", ID3D11ClassLinkage *link = nullptr)
+	{
+		compile(entry_point.empty() ? _entry : entry_point, target.empty() ? _target : target);
+		if (_hr.succeeded())
+		{
+			_hr = _dev->CreateComputeShader(_bin->GetBufferPointer(), _bin->GetBufferSize(), link, s);
+		}
+		return _hr;
+	}
+
+	hresult create_geometry_shader(ID3D11GeometryShader **s, const std::string &target = "", const std::string &entry_point = "", ID3D11ClassLinkage *link = nullptr)
+	{
+		compile(entry_point.empty() ? _entry : entry_point, target.empty() ? _target : target);
+		if (_hr.succeeded())
+		{
+			_hr = _dev->CreateGeometryShader(_bin->GetBufferPointer(), _bin->GetBufferSize(), link, s);
+		}
+		return _hr;
+	}
+
+	hresult create_input_layout(const D3D11_INPUT_ELEMENT_DESC *desc, UINT count, ID3D11InputLayout **layout)
+	{
+		if (_bin)
+		{
+			_hr = _dev->CreateInputLayout(desc, count, _bin->GetBufferPointer(), _bin->GetBufferSize(), layout);
+		}
+
+		return _hr;
+	}
+
+	void set_source(const std::string &src)
+	{
+		_src = src;
+		_dirty = true;
+	}
+
+	void set_source(std::istream &file)
+	{
+		_src = std::string{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+		_dirty = true;
+	}
+
+	void set_flags1(UINT flags)
+	{
+		_flags1 = flags;
+		_dirty = true;
+	}
+
+	void set_flags2(UINT flags)
+	{
+		_flags2 = flags;
+		_dirty = true;
+	}
+
+	UINT flags1() const
+	{
+		return _flags1;
+	}
+
+	UINT flags2() const
+	{
+		return _flags2;
+	}
+
+	UINT &flags1()
+	{
+		_dirty = true;
+		return _flags1;
+	}
+
+	UINT &flags2()
+	{
+		_dirty = true;
+		return _flags2;
+	}
+
+	void set_entry_point(const std::string &entry)
+	{
+		_entry = entry;
+		_dirty = true;
+	}
+
+	void set_target(const std::string &target)
+	{
+		_target = target;
+		_dirty = true;
+	}
+
+	void set_defines(const D3D_SHADER_MACRO *defs)
+	{
+		_defs = defs;
+		_dirty = true;
+	}
+
+	void set_includes(ID3DInclude *inc)
+	{
+		_inc = inc;
+		_dirty = true;
+	}
+
+private:
+	void compile(const std::string &entry, const std::string &target)
+	{
+		if (_src.empty()) return;
+		if (entry != _entry || target != _target) _dirty = true;
+		if (!_dirty) return;
+		
+		_bin = nullptr;
+		_msg = nullptr;
+
+		_hr = D3DCompile(&_src[0], _src.size(), nullptr, _defs, _inc, entry.c_str(), target.c_str(), _flags1, _flags2, &_bin, &_msg);
+		_dirty = false;
+	}
+
+private:
+	com_ptr<ID3D11Device> &_dev;
+	std::string _src;
+	UINT _flags1;
+	UINT _flags2;
+	std::string _entry;
+	std::string _target;
+	const D3D_SHADER_MACRO *_defs;
+	ID3DInclude *_inc;
+	com_ptr<ID3DBlob> _bin;
+	com_ptr<ID3DBlob> _msg;
+	hresult _hr;
+	bool _dirty;
 };
 
 class renderer
@@ -932,11 +1113,13 @@ public:
 			if (e.type() != SIZE_MINIMIZED && e.type() != SIZE_MAXHIDE)
 				init_view();
 		};
+
+		load();
 	}
 
 	virtual ~renderer()
 	{
-
+		//_dev->CreateVertexShader()
 	}
 
 	void update(float dt = 0.0f) override
@@ -948,6 +1131,16 @@ public:
 	{
 		float color[3] = {};
 		_ctx->ClearRenderTargetView(_back_buf_target, color);
+
+		UINT stride = sizeof(vertex);
+		UINT offset = 0;
+		_ctx->IASetInputLayout(layout);
+		_ctx->IAGetVertexBuffers(0, 1, &vb, &stride, &offset);
+		_ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		_ctx->VSSetShader(vs, nullptr, 0);
+		_ctx->PSSetShader(ps, nullptr, 0);
+
+		_ctx->Draw(3, 0);
 		_hr = _swap_chain->Present(0, 0);
 	}
 
@@ -984,24 +1177,6 @@ private:
 			, &_dev
 			, &_level
 			, &_ctx);
-
-		std::cout << "vertex = " << sizeof(vertex) << std::endl;
-		vertex v[3]{};
-
-		D3D11_BUFFER_DESC vbd{};
-		vbd.Usage = D3D11_USAGE_DEFAULT;
-		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vbd.ByteWidth = sizeof(vertex) * 3;
-
-		D3D11_SUBRESOURCE_DATA res{};
-		res.pSysMem = v;
-
-		com_ptr<ID3D11Buffer> vb;
-		_hr = _dev->CreateBuffer(&vbd, &res, &vb);
-
-		D3D11_INPUT_ELEMENT_DESC posd{};
-		posd.SemanticName = "position";
-		posd.Format = DXGI_FORMAT_R32G32B32_FLOAT;
 	}
 
 	void init_view()
@@ -1027,6 +1202,46 @@ private:
 		_ctx->RSSetViewports(1, &viewport);
 	}
 
+	void load()
+	{
+		std::cout << "vertex = " << sizeof(vertex) << std::endl;
+		vertex v[3]
+		{
+			vec3{ 0.5f, 0.5f, 0.5f },
+			vec3{ 0.5f, -0.5f, 0.5f },
+			vec3{-0.5f, -0.5f, 0.5f}
+		};
+
+		D3D11_BUFFER_DESC vbd{};
+		vbd.Usage = D3D11_USAGE_DEFAULT;
+		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vbd.ByteWidth = sizeof(vertex) * 3;
+
+		D3D11_SUBRESOURCE_DATA res{};
+		res.pSysMem = v;
+
+		_hr = _dev->CreateBuffer(&vbd, &res, &vb);
+
+		D3D11_INPUT_ELEMENT_DESC posd{};
+		posd.SemanticName = "POSITION";
+		posd.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		
+		shader_factory sf(_dev);
+		
+		sf.set_source(std::ifstream("shader.fx"));
+		sf.set_flags1(D3DCOMPILE_DEBUG | D3DCOMPILE_ENABLE_STRICTNESS);
+		_hr = sf.create_pixel_shader(&ps, "ps_5_0", "ps_main");
+		_hr = sf.create_vertex_shader(&vs, "vs_5_0", "vs_main");
+
+		_hr = sf.create_input_layout(&posd, 1, &layout);
+		
+	}
+
+	void unload()
+	{
+
+	}
+
 private:
 	hresult _hr;
 	window &_w;
@@ -1036,6 +1251,11 @@ private:
 	com_ptr<ID3D11RenderTargetView> _back_buf_target;
 	com_ptr<ID3D11Texture2D> _back_buf_tex;
 	D3D_FEATURE_LEVEL _level;
+
+	com_ptr<ID3D11InputLayout> layout;
+	com_ptr<ID3D11VertexShader> vs;
+	com_ptr<ID3D11PixelShader> ps;
+	com_ptr<ID3D11Buffer> vb;
 };
 
 class off_screen_renderer
