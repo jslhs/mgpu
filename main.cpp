@@ -1135,7 +1135,7 @@ public:
 		UINT stride = sizeof(vertex);
 		UINT offset = 0;
 		_ctx->IASetInputLayout(layout);
-		_ctx->IAGetVertexBuffers(0, 1, &vb, &stride, &offset);
+		_ctx->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
 		_ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		_ctx->VSSetShader(vs, nullptr, 0);
 		_ctx->PSSetShader(ps, nullptr, 0);
