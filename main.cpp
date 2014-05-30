@@ -845,6 +845,80 @@ public:
 	void apply(const shader &s);
 };
 
+template<size_t N, class T>
+struct vec_t;
+
+template<class T>
+struct vec_t<2, T>
+{
+	union
+	{
+		struct
+		{
+			T x, y;
+		};
+		struct
+		{
+			T s, t;
+		};
+		struct
+		{
+			T u, v;
+		};
+		T data[2];
+	};
+};
+
+template<class T>
+struct vec_t<3, T>
+{
+	union
+	{
+		struct
+		{
+			T x, y, z;
+		};
+		struct
+		{
+			T r, g, b;
+		};
+		struct
+		{
+			T u, v, w;
+		};
+		T data[3];
+	};
+};
+
+template<class T>
+struct vec_t<4, T>
+{
+	union
+	{
+		struct
+		{
+			T x, y, z, w;
+		};
+		struct
+		{
+			T r, g, b, a;
+		};
+		T data[4];
+	};
+};
+
+using vec2 = vec_t < 2, float > ;
+using vec3 = vec_t < 3, float > ;
+using vec4 = vec_t < 4, float > ;
+
+struct vertex
+{
+	vec3 pos;
+	vec4 color;
+	vec3 norm;
+	vec2 uv;
+};
+
 class renderer
 	: public renderer_base
 {
@@ -910,6 +984,24 @@ private:
 			, &_dev
 			, &_level
 			, &_ctx);
+
+		std::cout << "vertex = " << sizeof(vertex) << std::endl;
+		vertex v[3]{};
+
+		D3D11_BUFFER_DESC vbd{};
+		vbd.Usage = D3D11_USAGE_DEFAULT;
+		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vbd.ByteWidth = sizeof(vertex) * 3;
+
+		D3D11_SUBRESOURCE_DATA res{};
+		res.pSysMem = v;
+
+		com_ptr<ID3D11Buffer> vb;
+		_hr = _dev->CreateBuffer(&vbd, &res, &vb);
+
+		D3D11_INPUT_ELEMENT_DESC posd{};
+		posd.SemanticName = "position";
+		posd.Format = DXGI_FORMAT_R32G32B32_FLOAT;
 	}
 
 	void init_view()
@@ -1081,6 +1173,8 @@ int main()
 		loop.stop();
 		ExitProcess(0);
 	};
+
+	
 
 	loop.run();
 
