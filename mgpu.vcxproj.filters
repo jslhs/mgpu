@@ -13,10 +13,22 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="obj_parser">
+      <UniqueIdentifier>{7783800e-8a84-4fe1-98db-eb84f6460fba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="obj_parser\obj_parser.cpp">
+      <Filter>obj_parser</Filter>
+    </ClCompile>
+    <ClCompile Include="obj_parser\obj_reader.cpp">
+      <Filter>obj_parser</Filter>
+    </ClCompile>
+    <ClCompile Include="obj_parser\obj_scanner.cpp">
+      <Filter>obj_parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -29,5 +41,19 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shader.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="obj_parser\obj_file.h">
+      <Filter>obj_parser</Filter>
+    </ClInclude>
+    <ClInclude Include="obj_parser\obj_parser.h">
+      <Filter>obj_parser</Filter>
+    </ClInclude>
+    <ClInclude Include="obj_parser\obj_reader.h">
+      <Filter>obj_parser</Filter>
+    </ClInclude>
+    <ClInclude Include="obj_parser\obj_scanner.h">
+      <Filter>obj_parser</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

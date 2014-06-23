@@ -1,4 +1,7 @@
+#include "obj_reader.h"
+
 #include <Windows.h>
+#include <windowsx.h>
 #include <dxgi1_2.h>
 #include <d3d11.h>
 #include <io.h>
@@ -308,10 +311,86 @@ private:
 	bool _canceled = false;
 };
 
+enum MouseButtons
+{
+	NoMouseButton,
+	LeftButton = 1 << 0,
+	RightButton = 1 << 1,
+	MiddleButton = 1 << 2,
+};
+
+enum KeyModifiers
+{
+	NoKeyModifier,
+	ShiftKey = 1 << 0,
+	CtrlKey = 1 << 1,
+	AltKey = 1 << 2,
+};
+
 class mouse_event_args : public event_args
 {
 public:
+	mouse_event_args(WPARAM wparam, LPARAM lparam)
+		: event_args(wparam, lparam)
+		, _x(GET_X_LPARAM(lparam))
+		, _y(GET_X_LPARAM(lparam))
+		, _z(GET_WHEEL_DELTA_WPARAM(wparam))
+	{
+		int b = 0;
+		int m = 0;
+		if (wparam & MK_LBUTTON)
+			b |= LeftButton;
+		if (wparam & MK_RBUTTON)
+			b |= RightButton;
+		if (wparam & MK_MBUTTON)
+			b |= MiddleButton;
+		if (wparam & MK_CONTROL)
+			m |= CtrlKey;
+		if (wparam & MK_SHIFT)
+			m |= ShiftKey;
+		if (GetKeyState(VK_MENU) < 0)
+			m |= AltKey;
 
+		_btns = static_cast<MouseButtons>(b);
+		_km = static_cast<KeyModifiers>(m);
+	}
+
+	int x() const
+	{
+		return _x;
+	}
+
+	int y() const
+	{
+		return _y;
+	}
+
+	int z() const
+	{
+		return _z;
+	}
+
+	static int wheel_delta()
+	{
+		return WHEEL_DELTA;
+	}
+
+	MouseButtons buttons() const
+	{
+		return _btns;
+	}
+
+	KeyModifiers modifiers() const
+	{
+		return _km;
+	}
+
+private:
+	int _x;
+	int _y;
+	int _z;
+	MouseButtons _btns;
+	KeyModifiers _km;
 };
 
 //template<class>
@@ -524,6 +603,11 @@ public:
 	using did_resize_event = event < window&, size_event_args & > ;
 	using will_close_event = event < window&, cancel_event_args & > ;
 	using did_close_event = event < window&, event_args & > ;
+	using mouse_move_event = event < window &, mouse_event_args & > ;
+	using mouse_press_event = event < window &, mouse_event_args & > ;
+	using mouse_release_event = event < window &, mouse_event_args & >;
+	using mouse_dbclick_event = event < window &, mouse_event_args & > ;
+	using mouse_wheel_event = event < window &, mouse_event_args & > ;
 
 	will_resize_event &will_resize()
 	{
@@ -543,6 +627,31 @@ public:
 	did_close_event &did_close()
 	{
 		return _did_close;
+	}
+
+	mouse_move_event &mouse_move()
+	{
+		return _mouse_move;
+	}
+
+	mouse_press_event &mouse_press()
+	{
+		return _mouse_press;
+	}
+
+	mouse_release_event &mouse_release()
+	{
+		return _mouse_release;
+	}
+
+	mouse_dbclick_event &mouse_dbclick()
+	{
+		return _mouse_dbclick;
+	}
+
+	mouse_wheel_event &mouse_wheel()
+	{
+		return _mouse_wheel;
 	}
 
 	void update()
@@ -602,6 +711,42 @@ protected:
 				if (!args.canceled()) DestroyWindow(_hwnd);
 				return 0;
 			}
+		}
+			break;
+		case WM_MOUSEMOVE:
+		{
+			mouse_event_args args(wparam, lparam);
+			if (_mouse_move(*this, args)) return 0;
+		}
+			break;
+		case WM_LBUTTONDOWN:
+		case WM_RBUTTONDOWN:
+		case WM_MBUTTONDOWN:
+		{
+			mouse_event_args args(wparam, lparam);
+			if (_mouse_press(*this, args)) return 0;
+		}
+			break;
+		case WM_LBUTTONUP:
+		case WM_RBUTTONUP:
+		case WM_MBUTTONUP:
+		{
+			mouse_event_args args(wparam, lparam);
+			if (_mouse_release(*this, args)) return 0;
+		}
+			break;
+		case WM_LBUTTONDBLCLK:
+		case WM_RBUTTONDBLCLK:
+		case WM_MBUTTONDBLCLK:
+		{
+			mouse_event_args args(wparam, lparam);
+			if (_mouse_dbclick(*this, args)) return 0;
+		}
+			break;
+		case WM_MOUSEWHEEL:
+		{
+			mouse_event_args args(wparam, lparam);
+			if (_mouse_wheel(*this, args)) return 0;
 		}
 			break;
 		}
@@ -668,6 +813,11 @@ private:
 	did_resize_event _did_resize;
 	will_close_event _will_close;
 	did_close_event _did_close;
+	mouse_move_event _mouse_move;
+	mouse_press_event _mouse_press;
+	mouse_release_event _mouse_release;
+	mouse_dbclick_event _mouse_dbclick;
+	mouse_wheel_event _mouse_wheel;
 };
 
 int window::_wcount;
@@ -898,6 +1048,10 @@ struct vec_t<3, T>
 		struct
 		{
 			T u, v, w;
+		};
+		struct
+		{
+			T i, j, k;
 		};
 		T data[3];
 	};
@@ -1140,7 +1294,7 @@ public:
 		_ctx->VSSetShader(vs, nullptr, 0);
 		_ctx->PSSetShader(ps, nullptr, 0);
 
-		_ctx->Draw(3, 0);
+		_ctx->Draw(_verts.size(), 0);
 		_hr = _swap_chain->Present(0, 0);
 	}
 
@@ -1162,7 +1316,7 @@ private:
 		scd.BufferDesc.RefreshRate.Denominator = 1;
 		scd.Windowed = true;
 		scd.OutputWindow = _w;
-		scd.SampleDesc.Count = 1;
+		scd.SampleDesc.Count = 4;
 		scd.SampleDesc.Quality = 0;
 		scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		_hr = D3D11CreateDeviceAndSwapChain(nullptr
@@ -1204,21 +1358,40 @@ private:
 
 	void load()
 	{
-		std::cout << "vertex = " << sizeof(vertex) << std::endl;
-		vertex v[3]
+		utility::obj_reader r("f15.obj");
+		r.read();
+
+		auto &vt = r.vertices();
+		
+		for (auto f : r.faces())
 		{
-			vec3{ 0.5f, 0.5f, 0.5f },
-			vec3{ 0.5f, -0.5f, 0.5f },
-			vec3{-0.5f, -0.5f, 0.5f}
-		};
+			for (auto iv : *f)
+			{
+				auto pv = vt.at(iv->pos - 1);
+				vec3 v;
+				v.x = pv->x * 0.2;
+				v.y = pv->y * 0.2;
+				v.z = pv->z * 0.2;
+				//v.w = pv->w;
+				_verts.push_back(v);
+			}
+		}
+
+		//std::cout << "vertex = " << sizeof(vertex) << std::endl;
+		//vertex v[3]
+		//{
+		//	vec3{ 0.5f, 0.5f, 0.5f },
+		//	vec3{ 0.5f, -0.5f, 0.5f },
+		//	vec3{ -0.5f, -0.5f, 0.5f }
+		//};
 
 		D3D11_BUFFER_DESC vbd{};
 		vbd.Usage = D3D11_USAGE_DEFAULT;
 		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vbd.ByteWidth = sizeof(vertex) * 3;
+		vbd.ByteWidth = sizeof(vec3) * _verts.size();
 
 		D3D11_SUBRESOURCE_DATA res{};
-		res.pSysMem = v;
+		res.pSysMem = &_verts[0];
 
 		_hr = _dev->CreateBuffer(&vbd, &res, &vb);
 
@@ -1256,6 +1429,7 @@ private:
 	com_ptr<ID3D11VertexShader> vs;
 	com_ptr<ID3D11PixelShader> ps;
 	com_ptr<ID3D11Buffer> vb;
+	std::vector<vec3> _verts;
 };
 
 class off_screen_renderer
@@ -1374,6 +1548,16 @@ int main()
 	//	if (r != IDYES) e.cancel();
 	//};
 
+	w.mouse_press() += [](window &w, mouse_event_args &e)
+	{
+		std::cout << "mouse press: " << "(" << e.x() << ", " << e.y() << ")" << std::endl;
+	};
+
+	w.mouse_wheel() += [](window &w, mouse_event_args &e)
+	{
+		std::cout << "wheel: " << e.z() << std::endl;
+	};
+
 	renderer r(w);
 	
 	w.show();
@@ -1393,8 +1577,6 @@ int main()
 		loop.stop();
 		ExitProcess(0);
 	};
-
-	
 
 	loop.run();
 
