@@ -1440,12 +1440,12 @@ private:
 private:
 	void scale(float f)
 	{
-
+		std::cout << "scale: " << f << std::endl;
 	}
 
 	void translate(int x, int y)
 	{
-
+		std::cout << "translate: " << x << ", " << y << std::endl;
 	}
 
 private:
