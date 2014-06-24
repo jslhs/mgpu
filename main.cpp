@@ -1408,9 +1408,42 @@ private:
 
 		_hr = sf.create_input_layout(&posd, 1, &layout);
 		
+		_w.mouse_press() += [&](window &w, mouse_event_args &e)
+		{
+
+		};
+
+		_w.mouse_wheel() += [&](window &w, mouse_event_args &e)
+		{
+			_scale += e.z() / e.wheel_delta();
+			scale(_scale);
+		};
+
+		_w.mouse_move() += [&](window &w, mouse_event_args &e)
+		{
+			switch (e.buttons())
+			{
+			case LeftButton:break;
+			case RightButton:break;
+			case MiddleButton:
+				translate(e.x(), e.y());
+				break;
+			}
+		};
 	}
 
 	void unload()
+	{
+
+	}
+
+private:
+	void scale(float f)
+	{
+
+	}
+
+	void translate(int x, int y)
 	{
 
 	}
@@ -1430,6 +1463,8 @@ private:
 	com_ptr<ID3D11PixelShader> ps;
 	com_ptr<ID3D11Buffer> vb;
 	std::vector<vec3> _verts;
+
+	float _scale;
 };
 
 class off_screen_renderer
