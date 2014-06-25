@@ -7,6 +7,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <d3dcompiler.h>
+#include <DirectXMath.h>
 
 #include <iostream>
 #include <vector>
@@ -20,6 +21,9 @@
 #pragma comment(lib, "dxgi")
 #pragma comment(lib, "d3d11")
 #pragma comment(lib, "d3dcompiler")
+
+#include <wincodec.h>
+#pragma comment(lib, "windowscodecs")
 
 std::string get_win32_error_string(DWORD code, DWORD lang = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT))
 {
@@ -71,6 +75,11 @@ public:
 	operator HRESULT() const
 	{
 		return _hr;
+	}
+
+	operator bool() const
+	{
+		return succeeded();
 	}
 
 	std::string error_string() const
@@ -1081,6 +1090,7 @@ using vec4 = vec_t < 4, float > ;
 struct vertex
 {
 	vec3 pos;
+	vec2 tex;
 	//vec4 color;
 	//vec3 norm;
 	//vec2 uv;
@@ -1254,6 +1264,59 @@ private:
 	bool _dirty;
 };
 
+#include <codecvt>
+
+class texture_helper
+{
+public:
+	static hresult create_shader_resource(ID3D11Device *dev, const std::string &filename, ID3D11ShaderResourceView **view)
+	{
+		//dev->CreateTexture2D()
+		///dev->CreateShaderResourceView()
+		auto &f = factory();
+		
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt;
+		auto wpath = cvt.from_bytes(filename);
+		com_ptr<IWICBitmapDecoder> decoder;
+		hresult hr = f->CreateDecoderFromFilename(wpath.c_str()
+			, nullptr
+			, GENERIC_READ
+			, WICDecodeMetadataCacheOnDemand
+			, &decoder);
+
+		if (hr)
+		{
+			com_ptr<IWICBitmapFrameDecode> frame;
+			hr = decoder->GetFrame(0, &frame);
+			if (hr)
+			{
+				
+			}
+		}
+
+		return hr;
+	}
+
+	static com_ptr<IWICImagingFactory> &factory()
+	{
+		if (!_factory)
+		{
+			CoInitialize(nullptr);
+			hresult hr = CoCreateInstance(CLSID_WICImagingFactory
+				, nullptr
+				, CLSCTX_INPROC_SERVER
+				, __uuidof(IWICImagingFactory)
+				, (PVOID *) &_factory);
+		}
+		return _factory;
+	}
+
+private:
+	static com_ptr<IWICImagingFactory> _factory;
+};
+
+com_ptr<IWICImagingFactory> texture_helper::_factory;
+
 class renderer
 	: public renderer_base
 {
@@ -1265,7 +1328,13 @@ public:
 		_w.did_resize() += [&](window&, size_event_args &e){
 			std::cout << "width = " << e.width() << ", height = " << e.height() << std::endl;
 			if (e.type() != SIZE_MINIMIZED && e.type() != SIZE_MAXHIDE)
+			{
+				using namespace DirectX;
+				_proj_matrix = XMMatrixPerspectiveFovLH(XM_PIDIV4, float(e.width()) / float(e.height()), 0.01f, 100.0f);
+				_proj_matrix = XMMatrixTranspose(_proj_matrix);
+				_ctx->UpdateSubresource(_cb_proj_matrix, 0, 0, &_proj_matrix, 0, 0);
 				init_view();
+			}
 		};
 
 		load();
@@ -1362,17 +1431,21 @@ private:
 		r.read();
 
 		auto &vt = r.vertices();
+		auto &tex = r.textures();
 		
 		for (auto f : r.faces())
 		{
 			for (auto iv : *f)
 			{
 				auto pv = vt.at(iv->pos - 1);
-				vec3 v;
-				v.x = pv->x * 0.2;
-				v.y = pv->y * 0.2;
-				v.z = pv->z * 0.2;
+				vertex v;
+				v.pos.x = pv->x * 0.2;
+				v.pos.y = pv->y * 0.2;
+				v.pos.z = pv->z * 0.2;
 				//v.w = pv->w;
+				auto pt = tex.at(iv->tex - 1);
+				v.tex.s = pt->u;
+				v.tex.t = pt->v;
 				_verts.push_back(v);
 			}
 		}
@@ -1388,16 +1461,18 @@ private:
 		D3D11_BUFFER_DESC vbd{};
 		vbd.Usage = D3D11_USAGE_DEFAULT;
 		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vbd.ByteWidth = sizeof(vec3) * _verts.size();
+		vbd.ByteWidth = sizeof(vertex) * _verts.size();
 
 		D3D11_SUBRESOURCE_DATA res{};
 		res.pSysMem = &_verts[0];
 
 		_hr = _dev->CreateBuffer(&vbd, &res, &vb);
-
-		D3D11_INPUT_ELEMENT_DESC posd{};
-		posd.SemanticName = "POSITION";
-		posd.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		vertex *vp = nullptr;
+		D3D11_INPUT_ELEMENT_DESC ils[] = 
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, (UINT)(&vp->pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, (UINT)(&vp->tex), D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		};
 		
 		shader_factory sf(_dev);
 		
@@ -1406,7 +1481,21 @@ private:
 		_hr = sf.create_pixel_shader(&ps, "ps_5_0", "ps_main");
 		_hr = sf.create_vertex_shader(&vs, "vs_5_0", "vs_main");
 
-		_hr = sf.create_input_layout(&posd, 1, &layout);
+		_hr = sf.create_input_layout(ils, ARRAYSIZE(ils), &layout);
+
+		using namespace DirectX;
+		D3D11_BUFFER_DESC cb_desc{};
+		cb_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		cb_desc.ByteWidth = sizeof(XMMATRIX);
+		cb_desc.Usage = D3D11_USAGE_DEFAULT;
+
+		_hr = _dev->CreateBuffer(&cb_desc, nullptr, &_cb_world_matrix);
+		_hr = _dev->CreateBuffer(&cb_desc, nullptr, &_cb_view_matrix);
+		_hr = _dev->CreateBuffer(&cb_desc, nullptr, &_cb_proj_matrix);
+
+		_view_matrix = XMMatrixIdentity();
+		_view_matrix = XMMatrixTranspose(_view_matrix);
+		
 		
 		_w.mouse_press() += [&](window &w, mouse_event_args &e)
 		{
@@ -1430,6 +1519,8 @@ private:
 				break;
 			}
 		};
+
+		texture_helper::create_shader_resource(_dev, "Asuna.jpg", nullptr);
 	}
 
 	void unload()
@@ -1462,7 +1553,13 @@ private:
 	com_ptr<ID3D11VertexShader> vs;
 	com_ptr<ID3D11PixelShader> ps;
 	com_ptr<ID3D11Buffer> vb;
-	std::vector<vec3> _verts;
+	std::vector<vertex> _verts;
+
+	com_ptr<ID3D11Buffer> _cb_world_matrix;
+	com_ptr<ID3D11Buffer> _cb_view_matrix;
+	com_ptr<ID3D11Buffer> _cb_proj_matrix;
+	DirectX::XMMATRIX _view_matrix;
+	DirectX::XMMATRIX _proj_matrix;
 
 	float _scale;
 };
