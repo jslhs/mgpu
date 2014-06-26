@@ -10,6 +10,7 @@
 #include <DirectXMath.h>
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <string>
 #include <memory>
@@ -403,6 +404,118 @@ private:
 	KeyModifiers _km;
 };
 
+enum class VirtualKey
+{
+	Unknown
+	, Back			= VK_BACK
+	, Tab			= VK_TAB
+	, Clear			= VK_CLEAR
+	, Return		= VK_RETURN
+	, Shift			= VK_SHIFT
+	, Control		= VK_CONTROL
+	, Menu			= VK_MENU
+	, Pause			= VK_PAUSE
+	, CapsLock		= VK_CAPITAL
+	, Kana			= VK_KANA
+	, Hangeul		= VK_HANGEUL
+	, Hangul		= VK_HANGUL
+	, Junja			= VK_JUNJA
+	, Final			= VK_FINAL
+	, Hanja			= VK_HANJA
+	, Kanji			= VK_KANJI
+	, Escape		= VK_ESCAPE
+	, Convert		= VK_CONVERT
+	, NonConvert	= VK_NONCONVERT
+	, Accept		= VK_ACCEPT
+	, ModeChange	= VK_MODECHANGE
+	, Space			= VK_SPACE
+	, PageUp		= VK_PRIOR
+	, PageDown		= VK_NEXT
+	, End			= VK_END
+	, Home			= VK_HOME
+	, Left			= VK_LEFT
+	, Up			= VK_UP
+	, Right			= VK_RIGHT
+	, Down			= VK_DOWN
+	, Select		= VK_SELECT
+	, Print			= VK_PRINT
+	, Execute		= VK_EXECUTE
+	, Snapshot		= VK_SNAPSHOT
+	, Delete		= VK_DELETE
+	, Help			= VK_HELP
+	, LeftWin		= VK_LWIN
+	, RightWin		= VK_RWIN
+	, Apps			= VK_APPS
+	, Sleep			= VK_SLEEP
+	, NumPad0		= VK_NUMPAD0
+	, NumPad1		= VK_NUMPAD1
+	, NumPad2		= VK_NUMPAD2
+	, NumPad3		= VK_NUMPAD3
+	, NumPad4		= VK_NUMPAD4
+	, NumPad5		= VK_NUMPAD5
+	, NumPad6		= VK_NUMPAD6
+	, NumPad7		= VK_NUMPAD7
+	, NumPad8		= VK_NUMPAD8
+	, NumPad9		= VK_NUMPAD9
+	, Multiply		= VK_MULTIPLY
+	, Add			= VK_ADD
+	, Separator		= VK_SEPARATOR
+	, Subtract		= VK_SUBTRACT
+	, Decimal		= VK_DECIMAL
+	, Divide		= VK_DIVIDE
+	, F1			= VK_F1
+	, F2			= VK_F2
+	, F3			= VK_F3
+	, F4			= VK_F4
+	, F5			= VK_F5
+	, F6			= VK_F6
+	, F7			= VK_F7
+	, F8			= VK_F8
+	, F9			= VK_F9
+	, F10			= VK_F10
+	, NumLock		= VK_NUMLOCK
+	, Scroll		= VK_SCROLL
+	, LeftShift		= VK_LSHIFT
+	, RightShift	= VK_RSHIFT
+	, LeftCtrl		= VK_LCONTROL
+	, RightCtrl		= VK_RCONTROL
+	, LeftMenu		= VK_LMENU
+	, RightMenu		= VK_RMENU
+};
+
+class key_event_args
+	: public event_args
+{
+public:
+	key_event_args(WPARAM wparam, LPARAM lparam)
+		: event_args(wparam, lparam)
+		, _key(static_cast<VirtualKey>(wparam))
+		, _ch(wparam)
+		, _rpt_cnt(LOWORD(lparam))
+	{
+	}
+
+	VirtualKey key() const
+	{
+		return _key;
+	}
+
+	char ch() const
+	{
+		return _ch;
+	}
+
+	int repeat_count() const
+	{
+		return _rpt_cnt;
+	}
+
+private:
+	VirtualKey _key;
+	char _ch;
+	int _rpt_cnt;
+};
+
 //template<class>
 //class event;
 
@@ -618,6 +731,9 @@ public:
 	using mouse_release_event = event < window &, mouse_event_args & >;
 	using mouse_dbclick_event = event < window &, mouse_event_args & > ;
 	using mouse_wheel_event = event < window &, mouse_event_args & > ;
+	using key_press_event = event < window &, key_event_args & > ;
+	using key_release_event = event < window &, key_event_args & > ;
+	using key_char_event = event < window &, key_event_args & > ;
 
 	will_resize_event &will_resize()
 	{
@@ -662,6 +778,21 @@ public:
 	mouse_wheel_event &mouse_wheel()
 	{
 		return _mouse_wheel;
+	}
+
+	key_press_event &key_press()
+	{
+		return _key_press;
+	}
+
+	key_release_event &key_release()
+	{
+		return _key_release;
+	}
+
+	key_char_event &key_char()
+	{
+		return _key_char;
 	}
 
 	void update()
@@ -759,6 +890,24 @@ protected:
 			if (_mouse_wheel(*this, args)) return 0;
 		}
 			break;
+		case WM_KEYDOWN:
+		{
+			key_event_args args(wparam, lparam);
+			if (_key_press(*this, args)) return 0;
+		}
+			break;
+		case WM_KEYUP:
+		{
+			key_event_args args(wparam, lparam);
+			if (_key_release(*this, args)) return 0;
+		}
+			break;
+		case WM_CHAR:
+		{
+			key_event_args args(wparam, lparam);
+			if (_key_char(*this, args)) return 0;
+		}
+			break;
 		}
 		
 		return DefWindowProcA(_hwnd, msg, wparam, lparam);
@@ -828,6 +977,9 @@ private:
 	mouse_release_event _mouse_release;
 	mouse_dbclick_event _mouse_dbclick;
 	mouse_wheel_event _mouse_wheel;
+	key_press_event _key_press;
+	key_release_event _key_release;
+	key_char_event _key_char;
 };
 
 int window::_wcount;
@@ -1593,6 +1745,7 @@ private:
 		_w.mouse_wheel() += [&](window &w, mouse_event_args &e)
 		{
 			_scale += (e.z() / e.wheel_delta()) * 0.01f;
+			if (_scale < 0) _scale = 0;
 			scale(_scale);
 		};
 
@@ -1627,7 +1780,7 @@ private:
 private:
 	void scale(float f)
 	{
-		std::cout << "scale: " << f << "\r";
+		std::cout << "scale: " << f << std::setw(40) << " \r";
 		//_world_matrix = DirectX::XMMatrixScaling(f, f, f);
 		_world_matrix = XMMatrixTranspose(DirectX::XMMatrixScaling(f, f, 1.0f));
 	}
