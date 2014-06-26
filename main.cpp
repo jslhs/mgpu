@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <map>
 #include <fstream>
+#include <cassert>
 
 #pragma comment(lib, "dxgi")
 #pragma comment(lib, "d3d11")
@@ -970,9 +971,24 @@ public:
 		return !(*this == ptr);
 	}
 
+	bool operator==(nullptr_t)
+	{
+		return _ptr == nullptr;
+	}
+
+	bool operator!=(nullptr_t)
+	{
+		return _ptr != nullptr;
+	}
+
 	operator pointer()
 	{
 		return _ptr;
+	}
+
+	operator bool()
+	{
+		return _ptr != nullptr;
 	}
 
 	deleter &get_deleter()
@@ -1290,6 +1306,35 @@ public:
 			hr = decoder->GetFrame(0, &frame);
 			if (hr)
 			{
+				UINT width, height;
+				hr = frame->GetSize(&width, &height);
+				com_ptr<IWICFormatConverter> fmt_cvt;
+				hr = f->CreateFormatConverter(&fmt_cvt);
+				hr = fmt_cvt->Initialize(frame
+					, GUID_WICPixelFormat32bppPBGRA
+					, WICBitmapDitherTypeNone
+					, nullptr
+					, 0.0f
+					, WICBitmapPaletteTypeCustom);
+				com_ptr<ID3D11Texture2D> tex;
+				D3D11_TEXTURE2D_DESC desc{};
+				desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+				desc.ArraySize = 1;
+				desc.Width = width;
+				desc.Height = height;
+				desc.SampleDesc.Count = 1;
+				desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+				desc.Usage = D3D11_USAGE_DYNAMIC;
+				desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+				desc.MipLevels = 1;
+				hr = dev->CreateTexture2D(&desc, nullptr, &tex);
+				com_ptr<ID3D11DeviceContext> ctx;
+				dev->GetImmediateContext(&ctx);
+				D3D11_MAPPED_SUBRESOURCE res{};
+				hr = ctx->Map(tex, 0, D3D11_MAP_WRITE_DISCARD, 0, &res);
+				hr = fmt_cvt->CopyPixels(nullptr, res.RowPitch, res.DepthPitch, (BYTE *)res.pData);
+				ctx->Unmap(tex, 0);
+				hr = dev->CreateShaderResourceView(tex, nullptr, view);
 				
 			}
 		}
@@ -1323,16 +1368,20 @@ class renderer
 public:
 	renderer(window &w)
 		: _w(w)
+		, _scale(1.0f)
 	{
 		init_dev();
 		_w.did_resize() += [&](window&, size_event_args &e){
-			std::cout << "width = " << e.width() << ", height = " << e.height() << std::endl;
+			std::cout << "width = " << e.width() << ", height = " << e.height() << "\r";
 			if (e.type() != SIZE_MINIMIZED && e.type() != SIZE_MAXHIDE)
 			{
+				float width = e.width();
+				float height = e.height();
 				using namespace DirectX;
-				_proj_matrix = XMMatrixPerspectiveFovLH(XM_PIDIV4, float(e.width()) / float(e.height()), 0.01f, 100.0f);
+				_proj_matrix = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / height, 0.01f, 100.0f);
 				_proj_matrix = XMMatrixTranspose(_proj_matrix);
-				_ctx->UpdateSubresource(_cb_proj_matrix, 0, 0, &_proj_matrix, 0, 0);
+				//_ctx->UpdateSubresource(_cb_proj_matrix, 0, 0, &_proj_matrix, 0, 0);
+				_proj_matrix = XMMatrixTranspose(XMMatrixOrthographicLH(width / height, 1.0f, 0.1f, 1.0f));
 				init_view();
 			}
 		};
@@ -1362,6 +1411,16 @@ public:
 		_ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		_ctx->VSSetShader(vs, nullptr, 0);
 		_ctx->PSSetShader(ps, nullptr, 0);
+		_ctx->PSSetSamplers(0, 1, &_sampler);
+		_ctx->PSSetShaderResources(0, 1, &_color_tex);
+
+		_ctx->UpdateSubresource(_cb_world_matrix, 0, 0, &_world_matrix, 0, 0);
+		_ctx->UpdateSubresource(_cb_view_matrix, 0, 0, &_view_matrix, 0, 0);
+		_ctx->UpdateSubresource(_cb_proj_matrix, 0, 0, &_proj_matrix, 0, 0);
+
+		_ctx->VSSetConstantBuffers(0, 1, &_cb_world_matrix);
+		_ctx->VSSetConstantBuffers(1, 1, &_cb_view_matrix);
+		_ctx->VSSetConstantBuffers(2, 1, &_cb_proj_matrix);
 
 		_ctx->Draw(_verts.size(), 0);
 		_hr = _swap_chain->Present(0, 0);
@@ -1385,21 +1444,39 @@ private:
 		scd.BufferDesc.RefreshRate.Denominator = 1;
 		scd.Windowed = true;
 		scd.OutputWindow = _w;
-		scd.SampleDesc.Count = 4;
+		scd.SampleDesc.Count = 1;
 		scd.SampleDesc.Quality = 0;
 		scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		_hr = D3D11CreateDeviceAndSwapChain(nullptr
-			, D3D_DRIVER_TYPE_HARDWARE
-			, nullptr
-			, D3D11_CREATE_DEVICE_DEBUG
-			, nullptr
-			, 0
-			, D3D11_SDK_VERSION
-			, &scd
-			, &_swap_chain
-			, &_dev
-			, &_level
-			, &_ctx);
+		D3D_DRIVER_TYPE driveTypes[] = { D3D_DRIVER_TYPE_HARDWARE, D3D_DRIVER_TYPE_WARP, D3D_DRIVER_TYPE_REFERENCE };
+		UINT flags[] = { D3D11_CREATE_DEVICE_DEBUG };
+		for (auto &type : driveTypes)
+		{
+			for (auto &flag : flags)
+			{
+				D3D_FEATURE_LEVEL levels[] = 
+				{
+					D3D_FEATURE_LEVEL_11_1,
+					D3D_FEATURE_LEVEL_11_0
+				};
+
+				_hr = D3D11CreateDeviceAndSwapChain(nullptr
+					, type
+					, nullptr
+					, flag
+					, levels
+					, ARRAYSIZE(levels)
+					, D3D11_SDK_VERSION
+					, &scd
+					, &_swap_chain
+					, &_dev
+					, &_level
+					, &_ctx);
+				if (_hr) break;
+			}
+			if (_hr) break;
+		}
+
+		//assert(_dev, "cannot create directx11 device!");
 	}
 
 	void init_view()
@@ -1427,6 +1504,7 @@ private:
 
 	void load()
 	{
+		/*
 		utility::obj_reader r("f15.obj");
 		r.read();
 
@@ -1439,25 +1517,33 @@ private:
 			{
 				auto pv = vt.at(iv->pos - 1);
 				vertex v;
-				v.pos.x = pv->x * 0.2;
-				v.pos.y = pv->y * 0.2;
-				v.pos.z = pv->z * 0.2;
+				v.pos.x = pv->x;
+				v.pos.y = pv->y;
+				v.pos.z = pv->z;
 				//v.w = pv->w;
-				auto pt = tex.at(iv->tex - 1);
-				v.tex.s = pt->u;
-				v.tex.t = pt->v;
+				if (iv->tex)
+				{
+					auto pt = tex.at(iv->tex - 1);
+					v.tex.s = pt->u;
+					v.tex.t = pt->v;
+				}
+
 				_verts.push_back(v);
 			}
 		}
+		*/
+		
+		float hw = 0.5f;
+		float hh = 0.5f;
 
-		//std::cout << "vertex = " << sizeof(vertex) << std::endl;
-		//vertex v[3]
-		//{
-		//	vec3{ 0.5f, 0.5f, 0.5f },
-		//	vec3{ 0.5f, -0.5f, 0.5f },
-		//	vec3{ -0.5f, -0.5f, 0.5f }
-		//};
+		_verts.push_back(vertex{  hw,  hh, 1.0f, 1.0f, 0.0f });
+		_verts.push_back(vertex{  hw, -hh, 1.0f, 1.0f, 1.0f });
+		_verts.push_back(vertex{ -hw, -hh, 1.0f, 0.0f, 1.0f });
 
+		_verts.push_back(vertex{ -hw, -hh, 1.0f, 0.0f, 1.0f });
+		_verts.push_back(vertex{ -hw,  hh, 1.0f, 0.0f, 0.0f });
+		_verts.push_back(vertex{  hw,  hh, 1.0f, 1.0f, 0.0f });
+		
 		D3D11_BUFFER_DESC vbd{};
 		vbd.Usage = D3D11_USAGE_DEFAULT;
 		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -1470,8 +1556,8 @@ private:
 		vertex *vp = nullptr;
 		D3D11_INPUT_ELEMENT_DESC ils[] = 
 		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, (UINT)(&vp->pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, (UINT)(&vp->tex), D3D11_INPUT_PER_VERTEX_DATA, 0 }
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,	0, (UINT)(&vp->pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,		0, (UINT)(&vp->tex), D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 		
 		shader_factory sf(_dev);
@@ -1493,9 +1579,11 @@ private:
 		_hr = _dev->CreateBuffer(&cb_desc, nullptr, &_cb_view_matrix);
 		_hr = _dev->CreateBuffer(&cb_desc, nullptr, &_cb_proj_matrix);
 
+		_world_matrix = XMMatrixIdentity();
+		_world_matrix = XMMatrixTranspose(_world_matrix);
+
 		_view_matrix = XMMatrixIdentity();
-		_view_matrix = XMMatrixTranspose(_view_matrix);
-		
+		_view_matrix = XMMatrixTranspose(_view_matrix);		
 		
 		_w.mouse_press() += [&](window &w, mouse_event_args &e)
 		{
@@ -1504,7 +1592,7 @@ private:
 
 		_w.mouse_wheel() += [&](window &w, mouse_event_args &e)
 		{
-			_scale += e.z() / e.wheel_delta();
+			_scale += (e.z() / e.wheel_delta()) * 0.01f;
 			scale(_scale);
 		};
 
@@ -1520,7 +1608,15 @@ private:
 			}
 		};
 
-		texture_helper::create_shader_resource(_dev, "Asuna.jpg", nullptr);
+		texture_helper::create_shader_resource(_dev, "chess.png", &_color_tex);
+		D3D11_SAMPLER_DESC sd{};
+		sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		sd.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		sd.MaxLOD = D3D11_FLOAT32_MAX;
+		_hr = _dev->CreateSamplerState(&sd, &_sampler);
 	}
 
 	void unload()
@@ -1531,12 +1627,14 @@ private:
 private:
 	void scale(float f)
 	{
-		std::cout << "scale: " << f << std::endl;
+		std::cout << "scale: " << f << "\r";
+		//_world_matrix = DirectX::XMMatrixScaling(f, f, f);
+		_world_matrix = XMMatrixTranspose(DirectX::XMMatrixScaling(f, f, 1.0f));
 	}
 
 	void translate(int x, int y)
 	{
-		std::cout << "translate: " << x << ", " << y << std::endl;
+		std::cout << "translate: " << x << ", " << y << "\r";
 	}
 
 private:
@@ -1558,8 +1656,12 @@ private:
 	com_ptr<ID3D11Buffer> _cb_world_matrix;
 	com_ptr<ID3D11Buffer> _cb_view_matrix;
 	com_ptr<ID3D11Buffer> _cb_proj_matrix;
+	DirectX::XMMATRIX _world_matrix;
 	DirectX::XMMATRIX _view_matrix;
 	DirectX::XMMATRIX _proj_matrix;
+
+	com_ptr<ID3D11SamplerState> _sampler;
+	com_ptr<ID3D11ShaderResourceView> _color_tex;
 
 	float _scale;
 };
@@ -1682,13 +1784,13 @@ int main()
 
 	w.mouse_press() += [](window &w, mouse_event_args &e)
 	{
-		std::cout << "mouse press: " << "(" << e.x() << ", " << e.y() << ")" << std::endl;
+		std::cout << "mouse press: " << "(" << e.x() << ", " << e.y() << ")" << "\r";
 	};
 
-	w.mouse_wheel() += [](window &w, mouse_event_args &e)
-	{
-		std::cout << "wheel: " << e.z() << std::endl;
-	};
+	//w.mouse_wheel() += [](window &w, mouse_event_args &e)
+	//{
+	//	std::cout << "wheel: " << e.z() << std::endl;
+	//};
 
 	renderer r(w);
 	

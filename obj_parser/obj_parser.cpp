@@ -412,299 +412,299 @@ namespace utility {
       {
           case 6:
 /* Line 664 of lalr1.cc  */
-#line 171 "obj_parser.y"
+#line 174 "obj_parser.y"
     { reader.parse_mtl(*(yysemantic_stack_[(2) - (2)].sval)); }
+    break;
+
+  case 7:
+/* Line 664 of lalr1.cc  */
+#line 175 "obj_parser.y"
+    { reader.set_mtl_name((yysemantic_stack_[(1) - (1)].sval)); }
     break;
 
   case 8:
 /* Line 664 of lalr1.cc  */
-#line 173 "obj_parser.y"
+#line 176 "obj_parser.y"
     { reader.add((yysemantic_stack_[(1) - (1)].v)); }
     break;
 
   case 9:
 /* Line 664 of lalr1.cc  */
-#line 174 "obj_parser.y"
+#line 177 "obj_parser.y"
     { reader.add((yysemantic_stack_[(1) - (1)].vn)); }
     break;
 
   case 10:
 /* Line 664 of lalr1.cc  */
-#line 175 "obj_parser.y"
+#line 178 "obj_parser.y"
     { reader.add((yysemantic_stack_[(1) - (1)].vt)); }
     break;
 
   case 11:
 /* Line 664 of lalr1.cc  */
-#line 176 "obj_parser.y"
+#line 179 "obj_parser.y"
     { reader.add((yysemantic_stack_[(1) - (1)].f)); }
     break;
 
   case 12:
 /* Line 664 of lalr1.cc  */
-#line 177 "obj_parser.y"
+#line 180 "obj_parser.y"
     { reader.add((yysemantic_stack_[(1) - (1)].obj)); }
     break;
 
   case 14:
 /* Line 664 of lalr1.cc  */
-#line 179 "obj_parser.y"
+#line 182 "obj_parser.y"
     { reader.add((yysemantic_stack_[(1) - (1)].obj)); }
     break;
 
   case 15:
 /* Line 664 of lalr1.cc  */
-#line 182 "obj_parser.y"
+#line 185 "obj_parser.y"
     { reader.add((yysemantic_stack_[(1) - (1)].mtl)); }
     break;
 
   case 16:
 /* Line 664 of lalr1.cc  */
-#line 183 "obj_parser.y"
+#line 186 "obj_parser.y"
     { reader.set_mtl_Ka((yysemantic_stack_[(1) - (1)].color)); }
     break;
 
   case 17:
 /* Line 664 of lalr1.cc  */
-#line 184 "obj_parser.y"
+#line 187 "obj_parser.y"
     { reader.set_mtl_Kd((yysemantic_stack_[(1) - (1)].color)); }
     break;
 
   case 18:
 /* Line 664 of lalr1.cc  */
-#line 185 "obj_parser.y"
+#line 188 "obj_parser.y"
     { reader.set_mtl_Ks((yysemantic_stack_[(1) - (1)].color)); }
     break;
 
   case 19:
 /* Line 664 of lalr1.cc  */
-#line 186 "obj_parser.y"
+#line 189 "obj_parser.y"
     { reader.set_mtl_Ns((yysemantic_stack_[(1) - (1)].fval)); }
     break;
 
   case 20:
 /* Line 664 of lalr1.cc  */
-#line 187 "obj_parser.y"
+#line 190 "obj_parser.y"
     { reader.set_mtl_Ke((yysemantic_stack_[(1) - (1)].color)); }
     break;
 
   case 21:
 /* Line 664 of lalr1.cc  */
-#line 188 "obj_parser.y"
+#line 191 "obj_parser.y"
     { reader.set_mtl_d((yysemantic_stack_[(1) - (1)].fval)); }
     break;
 
   case 22:
 /* Line 664 of lalr1.cc  */
-#line 189 "obj_parser.y"
+#line 192 "obj_parser.y"
     { reader.set_mtl_illum((yysemantic_stack_[(1) - (1)].ival)); }
     break;
 
   case 23:
 /* Line 664 of lalr1.cc  */
-#line 190 "obj_parser.y"
+#line 193 "obj_parser.y"
     { reader.set_mtl_map_Ka((yysemantic_stack_[(1) - (1)].tex)); }
     break;
 
   case 24:
 /* Line 664 of lalr1.cc  */
-#line 191 "obj_parser.y"
+#line 194 "obj_parser.y"
     { reader.set_mtl_map_Kd((yysemantic_stack_[(1) - (1)].tex)); }
     break;
 
   case 25:
 /* Line 664 of lalr1.cc  */
-#line 192 "obj_parser.y"
+#line 195 "obj_parser.y"
     { reader.set_mtl_map_Ks((yysemantic_stack_[(1) - (1)].tex)); }
     break;
 
   case 26:
 /* Line 664 of lalr1.cc  */
-#line 193 "obj_parser.y"
+#line 196 "obj_parser.y"
     { reader.set_mtl_map_Ns((yysemantic_stack_[(1) - (1)].tex)); }
     break;
 
   case 27:
 /* Line 664 of lalr1.cc  */
-#line 194 "obj_parser.y"
+#line 197 "obj_parser.y"
     { reader.set_mtl_map_bump((yysemantic_stack_[(1) - (1)].tex)); }
     break;
 
   case 28:
 /* Line 664 of lalr1.cc  */
-#line 195 "obj_parser.y"
+#line 198 "obj_parser.y"
     { reader.set_mtl_map_d((yysemantic_stack_[(1) - (1)].tex)); }
     break;
 
   case 29:
 /* Line 664 of lalr1.cc  */
-#line 196 "obj_parser.y"
+#line 199 "obj_parser.y"
     { reader.set_mtl_disp((yysemantic_stack_[(1) - (1)].tex)); }
     break;
 
   case 30:
 /* Line 664 of lalr1.cc  */
-#line 197 "obj_parser.y"
+#line 200 "obj_parser.y"
     { reader.set_mtl_decal((yysemantic_stack_[(1) - (1)].tex)); }
     break;
 
   case 31:
 /* Line 664 of lalr1.cc  */
-#line 198 "obj_parser.y"
+#line 201 "obj_parser.y"
     { reader.set_mtl_refl((yysemantic_stack_[(1) - (1)].tex)); }
     break;
 
   case 32:
 /* Line 664 of lalr1.cc  */
-#line 199 "obj_parser.y"
+#line 202 "obj_parser.y"
     { reader.set_mtl_Tf((yysemantic_stack_[(1) - (1)].color)); }
     break;
 
   case 33:
 /* Line 664 of lalr1.cc  */
-#line 200 "obj_parser.y"
+#line 203 "obj_parser.y"
     { reader.set_mtl_Ni((yysemantic_stack_[(1) - (1)].fval)); }
-    break;
-
-  case 34:
-/* Line 664 of lalr1.cc  */
-#line 204 "obj_parser.y"
-    { reader.set_mtl_name((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
   case 35:
 /* Line 664 of lalr1.cc  */
 #line 208 "obj_parser.y"
-    { (yyval.v) = new obj::vertex((yysemantic_stack_[(5) - (2)].fval), (yysemantic_stack_[(5) - (3)].fval), (yysemantic_stack_[(5) - (4)].fval), (yysemantic_stack_[(5) - (5)].fval)); }
+    { (yyval.sval) = (yysemantic_stack_[(2) - (2)].sval); }
     break;
 
   case 36:
 /* Line 664 of lalr1.cc  */
-#line 209 "obj_parser.y"
-    { (yyval.v) = new obj::vertex((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
+#line 212 "obj_parser.y"
+    { (yyval.v) = new obj::vertex((yysemantic_stack_[(5) - (2)].fval), (yysemantic_stack_[(5) - (3)].fval), (yysemantic_stack_[(5) - (4)].fval), (yysemantic_stack_[(5) - (5)].fval)); }
     break;
 
   case 37:
 /* Line 664 of lalr1.cc  */
 #line 213 "obj_parser.y"
-    { (yyval.vn) = new obj::normal((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
+    { (yyval.v) = new obj::vertex((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
     break;
 
   case 38:
 /* Line 664 of lalr1.cc  */
 #line 217 "obj_parser.y"
-    { (yyval.vt) = new obj::texture((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
+    { (yyval.vn) = new obj::normal((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
     break;
 
   case 39:
 /* Line 664 of lalr1.cc  */
-#line 218 "obj_parser.y"
-    { (yyval.vt) = new obj::texture((yysemantic_stack_[(3) - (2)].fval), (yysemantic_stack_[(3) - (3)].fval)); }
+#line 221 "obj_parser.y"
+    { (yyval.vt) = new obj::texture((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
     break;
 
   case 40:
 /* Line 664 of lalr1.cc  */
-#line 219 "obj_parser.y"
-    { (yyval.vt) = new obj::texture((yysemantic_stack_[(2) - (2)].fval)); }
+#line 222 "obj_parser.y"
+    { (yyval.vt) = new obj::texture((yysemantic_stack_[(3) - (2)].fval), (yysemantic_stack_[(3) - (3)].fval)); }
     break;
 
   case 41:
 /* Line 664 of lalr1.cc  */
 #line 223 "obj_parser.y"
-    { (yyval.obj) = new obj::object((yysemantic_stack_[(2) - (2)].sval)); }
+    { (yyval.vt) = new obj::texture((yysemantic_stack_[(2) - (2)].fval)); }
     break;
 
   case 42:
 /* Line 664 of lalr1.cc  */
 #line 227 "obj_parser.y"
-    { /*std::cout << "smoothing group: " << $2 << std::endl;*/ }
+    { (yyval.obj) = new obj::object((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
   case 43:
 /* Line 664 of lalr1.cc  */
-#line 228 "obj_parser.y"
+#line 231 "obj_parser.y"
     { /*std::cout << "smoothing group: " << $2 << std::endl;*/ }
     break;
 
   case 44:
 /* Line 664 of lalr1.cc  */
 #line 232 "obj_parser.y"
-    { (yyval.iv) = new obj::ivertex((yysemantic_stack_[(5) - (1)].ival), (yysemantic_stack_[(5) - (3)].ival), (yysemantic_stack_[(5) - (5)].ival)); }
+    { /*std::cout << "smoothing group: " << $2 << std::endl;*/ }
     break;
 
   case 45:
 /* Line 664 of lalr1.cc  */
-#line 233 "obj_parser.y"
-    { (yyval.iv) = new obj::ivertex((yysemantic_stack_[(4) - (1)].ival), (yysemantic_stack_[(4) - (4)].ival)); }
+#line 236 "obj_parser.y"
+    { (yyval.iv) = new obj::ivertex((yysemantic_stack_[(5) - (1)].ival), (yysemantic_stack_[(5) - (3)].ival), (yysemantic_stack_[(5) - (5)].ival)); }
     break;
 
   case 46:
 /* Line 664 of lalr1.cc  */
 #line 237 "obj_parser.y"
-    { (yyval.f) = new obj::face((yysemantic_stack_[(5) - (2)].iv), (yysemantic_stack_[(5) - (3)].iv), (yysemantic_stack_[(5) - (4)].iv), (yysemantic_stack_[(5) - (5)].iv)); }
+    { (yyval.iv) = new obj::ivertex((yysemantic_stack_[(4) - (1)].ival), (yysemantic_stack_[(4) - (4)].ival)); }
     break;
 
   case 47:
 /* Line 664 of lalr1.cc  */
-#line 238 "obj_parser.y"
-    { (yyval.f) = new obj::face((yysemantic_stack_[(4) - (2)].iv), (yysemantic_stack_[(4) - (3)].iv), (yysemantic_stack_[(4) - (4)].iv)); }
+#line 241 "obj_parser.y"
+    { (yyval.f) = new obj::face((yysemantic_stack_[(5) - (2)].iv), (yysemantic_stack_[(5) - (3)].iv), (yysemantic_stack_[(5) - (4)].iv), (yysemantic_stack_[(5) - (5)].iv)); }
     break;
 
   case 48:
 /* Line 664 of lalr1.cc  */
-#line 241 "obj_parser.y"
-    { (yyval.obj) = new obj::object((yysemantic_stack_[(2) - (2)].sval)); }
+#line 242 "obj_parser.y"
+    { (yyval.f) = new obj::face((yysemantic_stack_[(4) - (2)].iv), (yysemantic_stack_[(4) - (3)].iv), (yysemantic_stack_[(4) - (4)].iv)); }
     break;
 
   case 49:
 /* Line 664 of lalr1.cc  */
 #line 245 "obj_parser.y"
-    { (yyval.fval) = (yysemantic_stack_[(1) - (1)].ival); }
+    { (yyval.obj) = new obj::object((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
   case 50:
 /* Line 664 of lalr1.cc  */
-#line 246 "obj_parser.y"
-    { (yyval.fval) = (yysemantic_stack_[(1) - (1)].fval); }
+#line 249 "obj_parser.y"
+    { (yyval.fval) = (yysemantic_stack_[(1) - (1)].ival); }
     break;
 
   case 51:
 /* Line 664 of lalr1.cc  */
-#line 249 "obj_parser.y"
-    { (yyval.sval) = (yysemantic_stack_[(1) - (1)].sval); }
+#line 250 "obj_parser.y"
+    { (yyval.fval) = (yysemantic_stack_[(1) - (1)].fval); }
     break;
 
   case 52:
 /* Line 664 of lalr1.cc  */
-#line 250 "obj_parser.y"
+#line 253 "obj_parser.y"
     { (yyval.sval) = (yysemantic_stack_[(1) - (1)].sval); }
     break;
 
   case 53:
 /* Line 664 of lalr1.cc  */
-#line 253 "obj_parser.y"
+#line 254 "obj_parser.y"
+    { (yyval.sval) = (yysemantic_stack_[(1) - (1)].sval); }
+    break;
+
+  case 54:
+/* Line 664 of lalr1.cc  */
+#line 257 "obj_parser.y"
     { (yyval.mtl) = new obj::material((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
-  case 55:
-/* Line 664 of lalr1.cc  */
-#line 257 "obj_parser.y"
-    { (yyval.color) = new obj::vec3((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
-    break;
-
-  case 57:
+  case 56:
 /* Line 664 of lalr1.cc  */
 #line 261 "obj_parser.y"
     { (yyval.color) = new obj::vec3((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
     break;
 
-  case 59:
+  case 58:
 /* Line 664 of lalr1.cc  */
 #line 265 "obj_parser.y"
     { (yyval.color) = new obj::vec3((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
     break;
 
-  case 61:
+  case 60:
 /* Line 664 of lalr1.cc  */
 #line 269 "obj_parser.y"
     { (yyval.color) = new obj::vec3((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
@@ -712,89 +712,89 @@ namespace utility {
 
   case 62:
 /* Line 664 of lalr1.cc  */
-#line 272 "obj_parser.y"
-    { (yyval.fval) = (yysemantic_stack_[(2) - (2)].fval); }
+#line 273 "obj_parser.y"
+    { (yyval.color) = new obj::vec3((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
     break;
 
   case 63:
 /* Line 664 of lalr1.cc  */
-#line 273 "obj_parser.y"
+#line 276 "obj_parser.y"
     { (yyval.fval) = (yysemantic_stack_[(2) - (2)].fval); }
     break;
 
-  case 65:
+  case 64:
 /* Line 664 of lalr1.cc  */
 #line 277 "obj_parser.y"
     { (yyval.fval) = (yysemantic_stack_[(2) - (2)].fval); }
     break;
 
-  case 67:
+  case 66:
 /* Line 664 of lalr1.cc  */
 #line 281 "obj_parser.y"
+    { (yyval.fval) = (yysemantic_stack_[(2) - (2)].fval); }
+    break;
+
+  case 68:
+/* Line 664 of lalr1.cc  */
+#line 285 "obj_parser.y"
     { (yyval.ival) = (yysemantic_stack_[(2) - (2)].ival); }
     break;
 
-  case 69:
-/* Line 664 of lalr1.cc  */
-#line 285 "obj_parser.y"
-    { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
-    break;
-
-  case 71:
+  case 70:
 /* Line 664 of lalr1.cc  */
 #line 289 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
-  case 73:
+  case 72:
 /* Line 664 of lalr1.cc  */
 #line 293 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
-  case 75:
+  case 74:
 /* Line 664 of lalr1.cc  */
 #line 297 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
-  case 78:
+  case 76:
 /* Line 664 of lalr1.cc  */
-#line 302 "obj_parser.y"
+#line 301 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
   case 79:
 /* Line 664 of lalr1.cc  */
-#line 303 "obj_parser.y"
+#line 306 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
-  case 82:
+  case 80:
 /* Line 664 of lalr1.cc  */
-#line 308 "obj_parser.y"
+#line 307 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
   case 83:
 /* Line 664 of lalr1.cc  */
-#line 309 "obj_parser.y"
+#line 312 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
-  case 85:
+  case 84:
 /* Line 664 of lalr1.cc  */
 #line 313 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
-  case 87:
+  case 86:
 /* Line 664 of lalr1.cc  */
 #line 317 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
     break;
 
-  case 89:
+  case 88:
 /* Line 664 of lalr1.cc  */
 #line 321 "obj_parser.y"
     { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
@@ -802,19 +802,25 @@ namespace utility {
 
   case 90:
 /* Line 664 of lalr1.cc  */
-#line 323 "obj_parser.y"
+#line 325 "obj_parser.y"
+    { (yyval.tex) = new obj::tex_map((yysemantic_stack_[(2) - (2)].sval)); }
+    break;
+
+  case 91:
+/* Line 664 of lalr1.cc  */
+#line 327 "obj_parser.y"
     { (yyval.color) = new obj::vec3((yysemantic_stack_[(4) - (2)].fval), (yysemantic_stack_[(4) - (3)].fval), (yysemantic_stack_[(4) - (4)].fval)); }
     break;
 
-  case 92:
+  case 93:
 /* Line 664 of lalr1.cc  */
-#line 327 "obj_parser.y"
+#line 331 "obj_parser.y"
     { (yyval.fval) = (yysemantic_stack_[(2) - (2)].fval); }
     break;
 
 
 /* Line 664 of lalr1.cc  */
-#line 818 "obj_parser.cpp"
+#line 824 "obj_parser.cpp"
       default:
         break;
       }
@@ -1026,23 +1032,24 @@ namespace utility {
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const signed char obj_parser::yypact_ninf_ = -67;
+  const signed char obj_parser::yypact_ninf_ = -69;
   const signed char
   obj_parser::yypact_[] =
   {
-       102,    13,    13,    13,     1,     7,     2,    12,    14,     3,
-     -67,    15,    13,    13,    13,    13,     4,    13,     0,     0,
-      13,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-      13,    13,    13,    23,   102,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,   -67,   -67,    13,    13,    13,   -61,     1,
-     -67,   -67,   -67,   -67,   -67,   -67,   -67,    13,    13,    13,
-      13,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,   -67,   -67,   -67,   -67,    13,   -67,   -67,
-     -67,   -67,    13,    13,    13,    -1,     1,    13,    13,    13,
-      13,    13,    13,   -67,   -67,   -57,    22,     1,   -67,   -67,
-     -67,   -67,   -67,   -67,    24,   -67,   -67,   -67
+       105,     2,     2,     2,    11,    -3,     5,     9,    10,    13,
+     -69,    14,     2,     2,     2,     2,    17,     2,     1,     1,
+       2,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       2,     2,     2,    19,    23,   105,   -69,   -69,   -69,   -69,
+     -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,
+     -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,
+     -69,   -69,   -69,   -69,   -69,   -69,   -69,     2,     2,     2,
+     -58,    11,   -69,   -69,   -69,   -69,   -69,   -69,   -69,     2,
+       2,     2,     2,   -69,   -69,   -69,   -69,   -69,   -69,   -69,
+     -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,     2,
+     -69,   -69,   -69,   -69,   -69,     2,     2,     2,    -1,    11,
+       2,     2,     2,     2,     2,     2,   -69,   -69,   -57,    24,
+      11,   -69,   -69,   -69,   -69,   -69,   -69,    28,   -69,   -69,
+     -69
   };
 
   /* YYDEFACT[S] -- default reduction number in state S.  Performed when
@@ -1052,38 +1059,39 @@ namespace utility {
   obj_parser::yydefact_[] =
   {
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       5,     0,    54,    56,    58,    60,    66,    64,    76,    77,
-       0,    68,    70,    72,    74,    81,    80,    86,    84,    88,
-       0,     0,    91,     0,     2,     4,     7,     8,     9,    10,
-      12,    13,    11,    14,    15,    16,    17,    18,    20,    21,
-      19,    22,    23,    24,    25,    26,    27,    28,    30,    29,
-      31,    32,    33,    49,    50,     0,    40,     0,     0,     0,
-      41,    43,    42,    48,    34,     6,    53,     0,     0,     0,
-       0,    67,    65,    51,    52,    78,    79,    62,    69,    71,
-      73,    75,    83,    82,    87,    85,    89,     0,    63,    92,
-       1,     3,     0,    39,     0,     0,     0,     0,     0,     0,
-       0,     0,    36,    38,    37,     0,     0,    47,    55,    57,
-      59,    61,    90,    35,     0,    45,    46,    44
+       5,     0,    55,    57,    59,    61,    67,    65,    77,    78,
+       0,    69,    71,    73,    75,    82,    81,    87,    85,    89,
+       0,     0,    92,    94,     0,     2,     4,     7,     8,     9,
+      10,    12,    13,    11,    14,    15,    16,    17,    18,    20,
+      21,    19,    22,    23,    24,    25,    26,    27,    28,    30,
+      29,    31,    32,    33,    34,    50,    51,     0,    41,     0,
+       0,     0,    42,    44,    43,    49,    35,     6,    54,     0,
+       0,     0,     0,    68,    66,    52,    53,    79,    80,    63,
+      70,    72,    74,    76,    84,    83,    88,    86,    90,     0,
+      64,    93,    95,     1,     3,     0,    40,     0,     0,     0,
+       0,     0,     0,     0,     0,    37,    39,    38,     0,     0,
+      48,    56,    58,    60,    62,    91,    36,     0,    46,    47,
+      45
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   const signed char
   obj_parser::yypgoto_[] =
   {
-       -67,   -67,   -67,    -8,   -67,   -67,   -67,   -67,   -67,   -67,
-     -66,   -67,   -67,    -2,    20,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,   -67
+       -69,   -69,   -69,    -9,   -69,   -69,   -69,   -69,   -69,   -69,
+     -68,   -69,   -69,    -2,    21,   -69,   -69,   -69,   -69,   -69,
+     -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,   -69,
+     -69,   -69,   -69,   -69,   -69
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
   const signed char
   obj_parser::yydefgoto_[] =
   {
-        -1,    33,    34,    35,    36,    37,    38,    39,    40,    41,
-      69,    42,    43,    65,    85,    44,    45,    46,    47,    48,
-      49,    50,    51,    52,    53,    54,    55,    56,    57,    58,
-      59,    60,    61,    62
+        -1,    34,    35,    36,    37,    38,    39,    40,    41,    42,
+      71,    43,    44,    67,    87,    45,    46,    47,    48,    49,
+      50,    51,    52,    53,    54,    55,    56,    57,    58,    59,
+      60,    61,    62,    63,    64
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -1093,50 +1101,50 @@ namespace utility {
   const unsigned char
   obj_parser::yytable_[] =
   {
-        66,    67,   115,   106,    68,    71,    83,    81,    84,    75,
-      77,    78,    79,    80,    70,    82,    63,    64,    87,    73,
-     105,    74,    76,   100,   124,   125,   101,   127,    97,    98,
-      99,     0,     0,     0,     0,     0,     0,     0,     0,    86,
-     117,    88,    89,    90,    91,    92,    93,    94,    95,    96,
-       0,   126,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,   102,   103,   104,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,   107,   108,   109,   110,    72,
-     116,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,   111,     0,     0,     0,     0,
-     112,   113,   114,     0,     0,   118,   119,   120,   121,   122,
-     123,     1,     2,     3,     0,     0,     0,     0,     0,     0,
-       0,     4,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     5,     6,     0,     7,     0,     0,     0,     0,
-       8,     9,     0,     0,     0,     0,    10,    11,    12,    13,
-      14,    15,    16,    17,    18,    19,    20,    21,    22,    23,
-      24,    25,    26,    27,    28,    29,     0,     0,     0,     0,
+        68,    69,   118,   109,    72,    65,    66,    85,    73,    86,
+      79,    80,    81,    82,    70,    84,    75,    76,    89,    77,
+      83,    78,   102,   103,   108,   127,   104,   128,    99,   100,
+     101,   130,     0,     0,     0,     0,     0,     0,     0,     0,
+      88,   120,    90,    91,    92,    93,    94,    95,    96,    97,
+      98,     0,   129,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,   105,   106,   107,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,   110,   111,   112,
+     113,   119,    74,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,   114,     0,     0,
+       0,     0,     0,   115,   116,   117,     0,     0,   121,   122,
+     123,   124,   125,   126,     1,     2,     3,     0,     0,     0,
+       0,     0,     0,     0,     4,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     5,     6,     0,     7,     0,
+       0,     0,     0,     8,     9,     0,     0,     0,     0,    10,
+      11,    12,    13,    14,    15,    16,    17,    18,    19,    20,
+      21,    22,    23,    24,    25,    26,    27,    28,    29,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-      30,    31,    32
+       0,     0,     0,    30,    31,    32,    33
   };
 
   /* YYCHECK.  */
   const signed char
   obj_parser::yycheck_[] =
   {
-         2,     3,     3,    69,     3,     3,     6,     3,     8,     6,
-      12,    13,    14,    15,     7,    17,     3,     4,    20,     7,
-      81,     7,     7,     0,    81,     3,    34,     3,    30,    31,
-      32,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    19,
-     106,    21,    22,    23,    24,    25,    26,    27,    28,    29,
-      -1,   117,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    65,    66,    67,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    77,    78,    79,    80,    77,
-      81,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    97,    -1,    -1,    -1,    -1,
-     102,   103,   104,    -1,    -1,   107,   108,   109,   110,   111,
-     112,     9,    10,    11,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    19,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    30,    31,    -1,    33,    -1,    -1,    -1,    -1,
-      38,    39,    -1,    -1,    -1,    -1,    44,    45,    46,    47,
-      48,    49,    50,    51,    52,    53,    54,    55,    56,    57,
-      58,    59,    60,    61,    62,    63,    -1,    -1,    -1,    -1,
+         2,     3,     3,    71,     7,     3,     4,     6,     3,     8,
+      12,    13,    14,    15,     3,    17,     7,     7,    20,     6,
+       3,     7,     3,     0,    82,    82,    35,     3,    30,    31,
+      32,     3,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      19,   109,    21,    22,    23,    24,    25,    26,    27,    28,
+      29,    -1,   120,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    67,    68,    69,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    79,    80,    81,
+      82,    82,    77,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    99,    -1,    -1,
+      -1,    -1,    -1,   105,   106,   107,    -1,    -1,   110,   111,
+     112,   113,   114,   115,     9,    10,    11,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    19,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    30,    31,    -1,    33,    -1,
+      -1,    -1,    -1,    38,    39,    -1,    -1,    -1,    -1,    44,
+      45,    46,    47,    48,    49,    50,    51,    52,    53,    54,
+      55,    56,    57,    58,    59,    60,    61,    62,    63,    -1,
       -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      78,    79,    80
+      -1,    -1,    -1,    78,    79,    80,    81
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -1147,16 +1155,17 @@ namespace utility {
          0,     9,    10,    11,    19,    30,    31,    33,    38,    39,
       44,    45,    46,    47,    48,    49,    50,    51,    52,    53,
       54,    55,    56,    57,    58,    59,    60,    61,    62,    63,
-      78,    79,    80,    84,    85,    86,    87,    88,    89,    90,
-      91,    92,    94,    95,    98,    99,   100,   101,   102,   103,
+      78,    79,    80,    81,    85,    86,    87,    88,    89,    90,
+      91,    92,    93,    95,    96,    99,   100,   101,   102,   103,
      104,   105,   106,   107,   108,   109,   110,   111,   112,   113,
-     114,   115,   116,     3,     4,    96,    96,    96,     3,    93,
-       7,     3,    77,     7,     7,     6,     7,    96,    96,    96,
-      96,     3,    96,     6,     8,    97,    97,    96,    97,    97,
-      97,    97,    97,    97,    97,    97,    97,    96,    96,    96,
-       0,    86,    96,    96,    96,    81,    93,    96,    96,    96,
-      96,    96,    96,    96,    96,     3,    81,    93,    96,    96,
-      96,    96,    96,    96,    81,     3,    93,     3
+     114,   115,   116,   117,   118,     3,     4,    97,    97,    97,
+       3,    94,     7,     3,    77,     7,     7,     6,     7,    97,
+      97,    97,    97,     3,    97,     6,     8,    98,    98,    97,
+      98,    98,    98,    98,    98,    98,    98,    98,    98,    97,
+      97,    97,     3,     0,    87,    97,    97,    97,    82,    94,
+      97,    97,    97,    97,    97,    97,    97,    97,     3,    82,
+      94,    97,    97,    97,    97,    97,    97,    82,     3,    94,
+       3
   };
 
 #if YYDEBUG
@@ -1173,7 +1182,7 @@ namespace utility {
      305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
      315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
      325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337
+     335,   336,   337,   338
   };
 #endif
 
@@ -1181,16 +1190,16 @@ namespace utility {
   const unsigned char
   obj_parser::yyr1_[] =
   {
-         0,    83,    84,    85,    85,    86,    86,    86,    86,    86,
-      86,    86,    86,    86,    86,    86,    86,    86,    86,    86,
-      86,    86,    86,    86,    86,    86,    86,    86,    86,    86,
-      86,    86,    86,    86,    87,    88,    88,    89,    90,    90,
-      90,    91,    92,    92,    93,    93,    94,    94,    95,    96,
-      96,    97,    97,    98,    99,    99,   100,   100,   101,   101,
-     102,   102,   103,   103,   104,   104,   105,   105,   106,   106,
-     107,   107,   108,   108,   109,   109,   110,   110,   110,   110,
-     111,   111,   111,   111,   112,   112,   113,   113,   114,   114,
-     115,   116,   116
+         0,    84,    85,    86,    86,    87,    87,    87,    87,    87,
+      87,    87,    87,    87,    87,    87,    87,    87,    87,    87,
+      87,    87,    87,    87,    87,    87,    87,    87,    87,    87,
+      87,    87,    87,    87,    87,    88,    89,    89,    90,    91,
+      91,    91,    92,    93,    93,    94,    94,    95,    95,    96,
+      97,    97,    98,    98,    99,   100,   100,   101,   101,   102,
+     102,   103,   103,   104,   104,   105,   105,   106,   106,   107,
+     107,   108,   108,   109,   109,   110,   110,   111,   111,   111,
+     111,   112,   112,   112,   112,   113,   113,   114,   114,   115,
+     115,   116,   117,   117,   118,   118
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1200,13 +1209,13 @@ namespace utility {
          0,     2,     1,     2,     1,     1,     2,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     2,     5,     4,     4,     4,     3,
-       2,     2,     2,     2,     5,     4,     5,     4,     2,     1,
-       1,     1,     1,     2,     1,     4,     1,     4,     1,     4,
-       1,     4,     2,     2,     1,     2,     1,     2,     1,     2,
-       1,     2,     1,     2,     1,     2,     1,     1,     2,     2,
-       1,     1,     2,     2,     1,     2,     1,     2,     1,     2,
-       4,     1,     2
+       1,     1,     1,     1,     1,     2,     5,     4,     4,     4,
+       3,     2,     2,     2,     2,     5,     4,     5,     4,     2,
+       1,     1,     1,     1,     2,     1,     4,     1,     4,     1,
+       4,     1,     4,     2,     2,     1,     2,     1,     2,     1,
+       2,     1,     2,     1,     2,     1,     2,     1,     1,     2,
+       2,     1,     1,     2,     2,     1,     2,     1,     2,     1,
+       2,     4,     1,     2,     1,     2
   };
 
 #if YYDEBUG
@@ -1228,16 +1237,16 @@ namespace utility {
   "ILLUM", "NS", "MAP_BUMP", "BUMP", "D", "MAP_KA", "MAP_KD", "MAP_KS",
   "MAP_NS", "MAP_OPACITY", "MAP_D", "DISP", "DECAL", "REFL", "BLENDU",
   "BLENDV", "BOOST", "MM", "O", "SCALE", "TURBULENCE", "TEX_RES", "CLAMP",
-  "BUMP_MUL", "IMFCHAN", "TYPE", "ON", "OFF", "TF", "TR", "NI", "SLASH",
-  "BACK_SLASH", "$accept", "obj_file", "obj_file_lines", "obj_file_line",
-  "material_line", "vertex_line", "normal_line", "texture_line",
-  "group_line", "smooth_group_line", "vertex_group", "face_line",
-  "object_line", "real", "path", "newmtl_line", "ambient_line",
-  "diffuse_line", "specular_line", "env_color_line", "dissolve_line",
-  "specular_n_line", "illum_line", "ambient_map_line", "diffuse_map_line",
-  "specular_map_line", "specular_n_map_line", "bump_map_line",
-  "dissolve_map_line", "decal_map_line", "disp_map_line", "refl_map_line",
-  "trans_filter_line", "optical_density_line", YY_NULL
+  "BUMP_MUL", "IMFCHAN", "TYPE", "ON", "OFF", "TF", "TR", "NI", "KM",
+  "SLASH", "BACK_SLASH", "$accept", "obj_file", "obj_file_lines",
+  "obj_file_line", "material_line", "vertex_line", "normal_line",
+  "texture_line", "group_line", "smooth_group_line", "vertex_group",
+  "face_line", "object_line", "real", "path", "newmtl_line",
+  "ambient_line", "diffuse_line", "specular_line", "env_color_line",
+  "dissolve_line", "specular_n_line", "illum_line", "ambient_map_line",
+  "diffuse_map_line", "specular_map_line", "specular_n_map_line",
+  "bump_map_line", "dissolve_map_line", "decal_map_line", "disp_map_line",
+  "refl_map_line", "trans_filter_line", "optical_density_line", "km_line", YY_NULL
   };
 
 
@@ -1245,65 +1254,66 @@ namespace utility {
   const obj_parser::rhs_number_type
   obj_parser::yyrhs_[] =
   {
-        84,     0,    -1,    85,    -1,    85,    86,    -1,    86,    -1,
-      44,    -1,    39,     6,    -1,    87,    -1,    88,    -1,    89,
-      -1,    90,    -1,    94,    -1,    91,    -1,    92,    -1,    95,
-      -1,    98,    -1,    99,    -1,   100,    -1,   101,    -1,   104,
-      -1,   102,    -1,   103,    -1,   105,    -1,   106,    -1,   107,
-      -1,   108,    -1,   109,    -1,   110,    -1,   111,    -1,   113,
-      -1,   112,    -1,   114,    -1,   115,    -1,   116,    -1,    38,
-       7,    -1,     9,    96,    96,    96,    96,    -1,     9,    96,
-      96,    96,    -1,    11,    96,    96,    96,    -1,    10,    96,
-      96,    96,    -1,    10,    96,    96,    -1,    10,    96,    -1,
-      30,     7,    -1,    31,    77,    -1,    31,     3,    -1,     3,
-      81,     3,    81,     3,    -1,     3,    81,    81,     3,    -1,
-      19,    93,    93,    93,    93,    -1,    19,    93,    93,    93,
-      -1,    33,     7,    -1,     3,    -1,     4,    -1,     6,    -1,
-       8,    -1,    45,     7,    -1,    46,    -1,    46,    96,    96,
-      96,    -1,    47,    -1,    47,    96,    96,    96,    -1,    48,
-      -1,    48,    96,    96,    96,    -1,    49,    -1,    49,    96,
-      96,    96,    -1,    54,    96,    -1,    79,    96,    -1,    51,
-      -1,    51,    96,    -1,    50,    -1,    50,     3,    -1,    55,
-      -1,    55,    97,    -1,    56,    -1,    56,    97,    -1,    57,
-      -1,    57,    97,    -1,    58,    -1,    58,    97,    -1,    52,
-      -1,    53,    -1,    52,    97,    -1,    53,    97,    -1,    60,
-      -1,    59,    -1,    60,    97,    -1,    59,    97,    -1,    62,
-      -1,    62,    97,    -1,    61,    -1,    61,    97,    -1,    63,
-      -1,    63,    97,    -1,    78,    96,    96,    96,    -1,    80,
-      -1,    80,    96,    -1
+        85,     0,    -1,    86,    -1,    86,    87,    -1,    87,    -1,
+      44,    -1,    39,     6,    -1,    88,    -1,    89,    -1,    90,
+      -1,    91,    -1,    95,    -1,    92,    -1,    93,    -1,    96,
+      -1,    99,    -1,   100,    -1,   101,    -1,   102,    -1,   105,
+      -1,   103,    -1,   104,    -1,   106,    -1,   107,    -1,   108,
+      -1,   109,    -1,   110,    -1,   111,    -1,   112,    -1,   114,
+      -1,   113,    -1,   115,    -1,   116,    -1,   117,    -1,   118,
+      -1,    38,     7,    -1,     9,    97,    97,    97,    97,    -1,
+       9,    97,    97,    97,    -1,    11,    97,    97,    97,    -1,
+      10,    97,    97,    97,    -1,    10,    97,    97,    -1,    10,
+      97,    -1,    30,     7,    -1,    31,    77,    -1,    31,     3,
+      -1,     3,    82,     3,    82,     3,    -1,     3,    82,    82,
+       3,    -1,    19,    94,    94,    94,    94,    -1,    19,    94,
+      94,    94,    -1,    33,     7,    -1,     3,    -1,     4,    -1,
+       6,    -1,     8,    -1,    45,     7,    -1,    46,    -1,    46,
+      97,    97,    97,    -1,    47,    -1,    47,    97,    97,    97,
+      -1,    48,    -1,    48,    97,    97,    97,    -1,    49,    -1,
+      49,    97,    97,    97,    -1,    54,    97,    -1,    79,    97,
+      -1,    51,    -1,    51,    97,    -1,    50,    -1,    50,     3,
+      -1,    55,    -1,    55,    98,    -1,    56,    -1,    56,    98,
+      -1,    57,    -1,    57,    98,    -1,    58,    -1,    58,    98,
+      -1,    52,    -1,    53,    -1,    52,    98,    -1,    53,    98,
+      -1,    60,    -1,    59,    -1,    60,    98,    -1,    59,    98,
+      -1,    62,    -1,    62,    98,    -1,    61,    -1,    61,    98,
+      -1,    63,    -1,    63,    98,    -1,    78,    97,    97,    97,
+      -1,    80,    -1,    80,    97,    -1,    81,    -1,    81,     3,
+      -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
      YYRHS.  */
-  const unsigned char
+  const unsigned short int
   obj_parser::yyprhs_[] =
   {
          0,     0,     3,     5,     8,    10,    12,    15,    17,    19,
       21,    23,    25,    27,    29,    31,    33,    35,    37,    39,
       41,    43,    45,    47,    49,    51,    53,    55,    57,    59,
-      61,    63,    65,    67,    69,    72,    78,    83,    88,    93,
-      97,   100,   103,   106,   109,   115,   120,   126,   131,   134,
-     136,   138,   140,   142,   145,   147,   152,   154,   159,   161,
-     166,   168,   173,   176,   179,   181,   184,   186,   189,   191,
-     194,   196,   199,   201,   204,   206,   209,   211,   213,   216,
-     219,   221,   223,   226,   229,   231,   234,   236,   239,   241,
-     244,   249,   251
+      61,    63,    65,    67,    69,    71,    74,    80,    85,    90,
+      95,    99,   102,   105,   108,   111,   117,   122,   128,   133,
+     136,   138,   140,   142,   144,   147,   149,   154,   156,   161,
+     163,   168,   170,   175,   178,   181,   183,   186,   188,   191,
+     193,   196,   198,   201,   203,   206,   208,   211,   213,   215,
+     218,   221,   223,   225,   228,   231,   233,   236,   238,   241,
+     243,   246,   251,   253,   256,   258
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   obj_parser::yyrline_[] =
   {
-         0,   161,   161,   165,   166,   170,   171,   172,   173,   174,
-     175,   176,   177,   178,   179,   182,   183,   184,   185,   186,
-     187,   188,   189,   190,   191,   192,   193,   194,   195,   196,
-     197,   198,   199,   200,   204,   208,   209,   213,   217,   218,
-     219,   223,   227,   228,   232,   233,   237,   238,   241,   245,
-     246,   249,   250,   253,   256,   257,   260,   261,   264,   265,
-     268,   269,   272,   273,   276,   277,   280,   281,   284,   285,
-     288,   289,   292,   293,   296,   297,   300,   301,   302,   303,
-     306,   307,   308,   309,   312,   313,   316,   317,   320,   321,
-     323,   326,   327
+         0,   164,   164,   168,   169,   173,   174,   175,   176,   177,
+     178,   179,   180,   181,   182,   185,   186,   187,   188,   189,
+     190,   191,   192,   193,   194,   195,   196,   197,   198,   199,
+     200,   201,   202,   203,   204,   208,   212,   213,   217,   221,
+     222,   223,   227,   231,   232,   236,   237,   241,   242,   245,
+     249,   250,   253,   254,   257,   260,   261,   264,   265,   268,
+     269,   272,   273,   276,   277,   280,   281,   284,   285,   288,
+     289,   292,   293,   296,   297,   300,   301,   304,   305,   306,
+     307,   310,   311,   312,   313,   316,   317,   320,   321,   324,
+     325,   327,   330,   331,   334,   335
   };
 
   // Print the state stack on the debug stream.
@@ -1376,7 +1386,7 @@ namespace utility {
       45,    46,    47,    48,    49,    50,    51,    52,    53,    54,
       55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
       65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
-      75,    76,    77,    78,    79,    80,    81,    82
+      75,    76,    77,    78,    79,    80,    81,    82,    83
     };
     if ((unsigned int) t <= yyuser_token_number_max_)
       return translate_table[t];
@@ -1385,24 +1395,24 @@ namespace utility {
   }
 
   const int obj_parser::yyeof_ = 0;
-  const int obj_parser::yylast_ = 182;
-  const int obj_parser::yynnts_ = 34;
+  const int obj_parser::yylast_ = 186;
+  const int obj_parser::yynnts_ = 35;
   const int obj_parser::yyempty_ = -2;
-  const int obj_parser::yyfinal_ = 100;
+  const int obj_parser::yyfinal_ = 103;
   const int obj_parser::yyterror_ = 1;
   const int obj_parser::yyerrcode_ = 256;
-  const int obj_parser::yyntokens_ = 83;
+  const int obj_parser::yyntokens_ = 84;
 
-  const unsigned int obj_parser::yyuser_token_number_max_ = 337;
+  const unsigned int obj_parser::yyuser_token_number_max_ = 338;
   const obj_parser::token_number_type obj_parser::yyundef_token_ = 2;
 
 /* Line 1135 of lalr1.cc  */
 #line 4 "obj_parser.y"
 } // utility
 /* Line 1135 of lalr1.cc  */
-#line 1404 "obj_parser.cpp"
+#line 1414 "obj_parser.cpp"
 /* Line 1136 of lalr1.cc  */
-#line 329 "obj_parser.y"
+#line 337 "obj_parser.y"
 
 
 

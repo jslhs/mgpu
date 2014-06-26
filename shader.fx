@@ -34,6 +34,7 @@ vs_output vs_main(vs_input v)
 	vo.pos = mul(v.pos, worldMatrix);
 	vo.pos = mul(vo.pos, viewMatrix);
 	vo.pos = mul(vo.pos, projMatrix);
+	//vo.pos = v.pos;
 	vo.tex0 = v.tex0;
 	return vo;
 }

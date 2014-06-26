@@ -187,8 +187,9 @@ namespace utility {
      TF = 333,
      TR = 334,
      NI = 335,
-     SLASH = 336,
-     BACK_SLASH = 337
+     KM = 336,
+     SLASH = 337,
+     BACK_SLASH = 338
    };
 
     };
@@ -316,7 +317,7 @@ namespace utility {
     /// A `-1'-separated list of the rules' RHS.
     static const rhs_number_type yyrhs_[];
     /// For each rule, the index of the first RHS symbol in \a yyrhs_.
-    static const unsigned char yyprhs_[];
+    static const unsigned short int yyprhs_[];
     /// For each rule, its source line number.
     static const unsigned short int yyrline_[];
     /// For each scanner token number, its symbol number.
@@ -368,7 +369,7 @@ namespace utility {
 #line 4 "obj_parser.y"
 } // utility
 /* Line 33 of lalr1.cc  */
-#line 372 "obj_parser.h"
+#line 373 "obj_parser.h"
 
 
 
