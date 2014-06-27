@@ -82,10 +82,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ImageRenderer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="obj_parser\obj_parser.cpp" />
     <ClCompile Include="obj_parser\obj_reader.cpp" />
     <ClCompile Include="obj_parser\obj_scanner.cpp" />
+    <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="pixel.fx">
@@ -103,10 +106,13 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ImageRenderer.h" />
     <ClInclude Include="obj_parser\obj_file.h" />
     <ClInclude Include="obj_parser\obj_parser.h" />
     <ClInclude Include="obj_parser\obj_reader.h" />
     <ClInclude Include="obj_parser\obj_scanner.h" />
+    <ClInclude Include="renderer.h" />
+    <ClInclude Include="win32.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

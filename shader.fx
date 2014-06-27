@@ -16,6 +16,14 @@ cbuffer cb_change_on_resize : register(b2)
 	matrix projMatrix;
 };
 
+cbuffer cb_material : register(b3)
+{
+	float3 ambient;
+	float3 diffuse;
+	float3 specular;
+	float Ns;
+};
+
 struct vs_input
 {
 	float4 pos : POSITION;

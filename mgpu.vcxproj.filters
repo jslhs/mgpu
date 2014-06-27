@@ -30,6 +30,15 @@
     <ClCompile Include="obj_parser\obj_scanner.cpp">
       <Filter>obj_parser</Filter>
     </ClCompile>
+    <ClCompile Include="ImageRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="win32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="vertex.fx">
@@ -54,6 +63,15 @@
     </ClInclude>
     <ClInclude Include="obj_parser\obj_scanner.h">
       <Filter>obj_parser</Filter>
+    </ClInclude>
+    <ClInclude Include="win32.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
