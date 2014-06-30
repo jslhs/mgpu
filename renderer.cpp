@@ -37,7 +37,7 @@ void renderer::update(float dt)
 
 void renderer::render()
 {
-	float color[3] = {};
+	float color[4] = {};
 	_ctx->ClearRenderTargetView(_back_buf_target, color);
 
 	UINT stride = sizeof(vertex);

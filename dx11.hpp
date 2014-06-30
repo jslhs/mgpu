@@ -88,7 +88,7 @@ public:
 
 	void set_source(std::istream &file)
 	{
-		_src = std::string{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+		_src = std::string( std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() );
 		_dirty = true;
 	}
 
@@ -216,7 +216,7 @@ public:
 					, 0.0f
 					, WICBitmapPaletteTypeCustom);
 				com_ptr<ID3D11Texture2D> tex;
-				D3D11_TEXTURE2D_DESC desc{};
+				D3D11_TEXTURE2D_DESC desc = {};
 				desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 				desc.ArraySize = 1;
 				desc.Width = width;
@@ -229,7 +229,7 @@ public:
 				hr = dev->CreateTexture2D(&desc, nullptr, &tex);
 				com_ptr<ID3D11DeviceContext> ctx;
 				dev->GetImmediateContext(&ctx);
-				D3D11_MAPPED_SUBRESOURCE res{};
+				D3D11_MAPPED_SUBRESOURCE res = {};
 				hr = ctx->Map(tex, 0, D3D11_MAP_WRITE_DISCARD, 0, &res);
 				hr = fmt_cvt->CopyPixels(nullptr, res.RowPitch, res.DepthPitch, (BYTE *)res.pData);
 				ctx->Unmap(tex, 0);

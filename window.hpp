@@ -1,81 +1,216 @@
 #pragma once
 
-#include "win32.hpp"
-class window;
-class rect
+template<class... Args>
+class event
 {
 public:
-#if (_MSC_VER >= 1800) || (defined(_GNU_G_))
-	rect()
-		: _rc{}
-	{
-
-	}
+#if _MSC_VER >= 1800
+	using delegate = std::function < void(Args...) >;
 #else
-	rect()
-	{
-		_rc.left = 0;
-		_rc.right = 0;
-		_rc.top = 0;
-		_rc.bottom = 0;
-	}
+	typedef std::function < void(Args...) >;
 #endif
 
-	rect(const RECT &rc)
-		: _rc(rc)
+	event &operator=(const delegate& handler)
 	{
-
+		_handlers.clear();
+		_handlers.push_back(handler);
+		return *this;
 	}
 
-	rect &operator=(const RECT &rc)
+	event &operator+=(const delegate& handler)
 	{
-		_rc = rc;
+		_handlers.push_back(handler);
+		return *this;
 	}
 
-	operator RECT&()
+	bool operator== (nullptr_t)
 	{
-		return _rc;
+		return _handlers.size() == 0;
 	}
 
-	int width() const
+	bool operator!= (nullptr_t)
 	{
-		return _rc.right - _rc.left;
+		return _handlers.size() != 0;
 	}
 
-	int height() const
+	operator bool()
 	{
-		return _rc.bottom - _rc.top;
+		_handlers.size() > 0;
 	}
 
-	void set_width(int width)
+	bool operator()(Args... args)
 	{
-		_rc.right = _rc.left + width;
-	}
-
-	void set_height(int height)
-	{
-		_rc.bottom = _rc.top + height;
-	}
-
-	long &x()
-	{
-		return _rc.left;
-	}
-
-	long &y()
-	{
-		return _rc.top;
-	}
-
-	RECT &rc()
-	{
-		return _rc;
+		bool r = (_handlers.size() != 0);
+		for (auto &handler : _handlers) if (handler) handler(args...);
+		return r;
 	}
 
 private:
-	RECT _rc;
+	std::vector<delegate> _handlers;
 };
 
+class event_args
+{
+public:
+	event_args()
+		: _wparam(0)
+		, _lparam(0)
+	{
+
+	}
+
+	event_args(WPARAM wparam, LPARAM lparam)
+		: _wparam(wparam)
+		, _lparam(lparam)
+	{
+
+	}
+
+	WPARAM wparam() const
+	{
+		return _wparam;
+	}
+
+	LPARAM lparam() const
+	{
+		return _lparam;
+	}
+
+private:
+	WPARAM _wparam;
+	LPARAM _lparam;
+};
+
+
+// for win32 gui app
+class console
+{
+protected:
+	console()
+	{
+		AllocConsole();
+		SetConsoleCtrlHandler(ctrl_handler, TRUE);
+	}
+
+public:
+	static console *instance()
+	{
+		if (!_inst)
+		{
+			_inst = std::unique_ptr<console>(new console());
+		}
+
+		return _inst.get();
+	}
+
+	static void destroy()
+	{
+		_inst.reset();
+	}
+
+	~console()
+	{
+		SetConsoleCtrlHandler(ctrl_handler, FALSE);
+		FreeConsole();
+	}
+
+	void redirect()
+	{
+		auto redir = [](DWORD from_handle, FILE *to_handle, char *mode){
+			auto std_handle = GetStdHandle(from_handle);
+			auto con_handle = _open_osfhandle((intptr_t)std_handle, _O_TEXT);
+			auto fp = _fdopen(con_handle, mode);
+			*to_handle = *fp;
+			setvbuf(to_handle, nullptr, _IONBF, 0);
+		};
+
+		redir(STD_OUTPUT_HANDLE, stdout, "w"); // redirect stdout
+		redir(STD_INPUT_HANDLE, stdin, "r"); // redirect stdin
+		redir(STD_ERROR_HANDLE, stderr, "w"); // redirect stderr
+
+		// make std::cout, std::cin, std::cerr, std::wcin, std::wcout, std::wcerr, 
+		// std::clog and std::wclog point to console as well
+		std::ios::sync_with_stdio();
+	}
+
+#if _MSC_VER >= 1800
+	using ctrl_c_event = event <event_args &>;
+	using ctrl_break_event = event < event_args & >;
+	using close_event = event < event_args & >;
+	using logoff_event = event < event_args & >;
+	using shutdown_event = event < event_args & >;
+#else
+	typedef event<event_args &> ctrl_c_event;
+	typedef event<event_args &> ctrl_break_event;
+	typedef event<event_args &> close_event;
+	typedef event<event_args &> logoff_event;
+	typedef event<event_args &> shutdown_event;
+#endif
+
+	ctrl_c_event &ctrl_c_pressed()
+	{
+		return _ctrl_c;
+	}
+
+	ctrl_break_event &ctrl_break_pressed()
+	{
+		return _ctrl_break;
+	}
+
+	close_event &will_close()
+	{
+		return _close;
+	}
+
+	logoff_event &will_logoff()
+	{
+		return _logoff;
+	}
+
+	shutdown_event &will_shutdown()
+	{
+		return _shutdown;
+	}
+
+private:
+	static BOOL WINAPI ctrl_handler(DWORD ctrl_type)
+	{
+		event_args args;
+		bool r = false;
+		switch (ctrl_type)
+		{
+		case CTRL_C_EVENT:
+			r = _inst->_ctrl_c(args);
+			break;
+		case CTRL_BREAK_EVENT:
+			r = _inst->_ctrl_break(args);
+			break;
+		case CTRL_CLOSE_EVENT:
+			r = _inst->_close(args);
+			break;
+		case CTRL_LOGOFF_EVENT:
+			r = _inst->_logoff(args);
+			break;
+		case CTRL_SHUTDOWN_EVENT:
+			r = _inst->_shutdown(args);
+			break;
+		}
+
+		return r ? TRUE : FALSE;
+	}
+
+	ctrl_c_event _ctrl_c;
+	ctrl_break_event _ctrl_break;
+	close_event _close;
+	logoff_event _logoff;
+	shutdown_event _shutdown;
+
+	static std::unique_ptr<console> _inst;
+};
+
+
+#include "win32.hpp"
+class window;
 class size_event_args
 	: public event_args
 {
